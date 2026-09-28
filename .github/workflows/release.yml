@@ -16,6 +16,10 @@ name: Release
 # the multi-arch image, skipping the push (without failing the release) if
 # the version tag already exists on Docker Hub; the `homebrew` job refreshes
 # the tap formula from the macOS tarballs.
+# Release policy: platform builds + `publish` are the release (strict).
+# `docker` and `homebrew` are secondary distribution channels: both run
+# best-effort (`continue-on-error`) so a Docker Hub or tap hiccup never
+# fails or blocks the GitHub Release.
 # Tag format: v<semver>, e.g. v0.1.0-beta.1
 
 on:
@@ -238,6 +242,7 @@ jobs:
     name: docker multi-arch
     needs: [gates, linux-x64, linux-arm64]
     runs-on: ubuntu-latest
+    continue-on-error: true
     env:
       # Docker Hub personal access token (write access to plomid/plomid).
       # Repo secret DOCKERHUB_TOKEN; username in DOCKERHUB_USERNAME.
@@ -299,6 +304,7 @@ jobs:
     name: update homebrew tap
     needs: [publish]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: checkout plomid
         uses: actions/checkout@v4
@@ -324,11 +330,23 @@ jobs:
           echo "arm64=${ARM64_SHA256}" >> "$GITHUB_OUTPUT"
           echo "x64=${X64_SHA256}" >> "$GITHUB_OUTPUT"
       - name: checkout homebrew tap
-        uses: actions/checkout@v4
-        with:
-          repository: plomid/homebrew-plomid
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          path: homebrew-plomid
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          set -euo pipefail
+          # actions/checkout fetches refs/heads/main explicitly and fails on
+          # an empty tap repo (no branches yet). Plain clone handles empty
+          # repos and any default branch; fall back to a fresh init.
+          rm -rf homebrew-plomid
+          if gh repo clone plomid/homebrew-plomid homebrew-plomid -- --depth=1 2>&1; then
+            echo "tap cloned"
+          else
+            echo "::warning::tap clone failed (empty or missing repo); initializing fresh"
+            mkdir -p homebrew-plomid/Formula
+            git -C homebrew-plomid init -b main
+            gh auth setup-git
+            git -C homebrew-plomid remote add origin "https://github.com/plomid/homebrew-plomid.git"
+          fi
       - name: generate formula
         env:
           VERSION: ${{ github.ref_name }}
@@ -376,6 +394,7 @@ jobs:
         working-directory: homebrew-plomid
         env:
           VERSION: ${{ github.ref_name }}
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           set -euo pipefail
           git config user.name "PLOMID Release Bot"
@@ -386,4 +405,5 @@ jobs:
             exit 0
           fi
           git commit -m "chore: update plomid to ${VERSION}"
-          git push origin main
+          # -u covers a freshly-initialized tap with no upstream yet.
+          git push -u origin main
