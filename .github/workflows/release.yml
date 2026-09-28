@@ -13,7 +13,10 @@ name: Release
 # builds natively on its own runner (no cross-compilation), packages with the
 # scripts in dist/, and uploads one directory per platform. The `publish` job
 # checksums everything and creates the GitHub Release; the `docker` job pushes
-# the multi-arch image. Tag format: v<semver>, e.g. v0.1.0-beta.1
+# the multi-arch image, skipping the push (without failing the release) if
+# the version tag already exists on Docker Hub; the `homebrew` job refreshes
+# the tap formula from the macOS tarballs.
+# Tag format: v<semver>, e.g. v0.1.0-beta.1
 
 on:
   push:
@@ -32,14 +35,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - run: make fmt-check
-      - run: make check
-      - run: make clippy
-      - run: make test
       - name: tag matches Cargo.toml
         run: |
           set -euo pipefail
@@ -59,13 +54,21 @@ jobs:
             echo "release $TAG already exists; bump Cargo.toml and tag a new version instead of reusing it"
             exit 1
           fi
-          # Fail fast before building all platforms: Docker Hub tags are
-          # immutable here, the docker job re-checks just before push.
+          # Docker tag reuse does not block the release: the docker job
+          # skips the push if the tag already exists and the rest of the
+          # release (platform artifacts + GitHub Release) still publishes.
           if curl -fsSL "https://hub.docker.com/v2/repositories/plomid/plomid/tags/${TAG}/" >/dev/null 2>&1; then
-            echo "docker tag plomid/plomid:$TAG already exists; delete it from Docker Hub first or bump to a new version"
-            exit 1
+            echo "::warning::docker tag plomid/plomid:$TAG already exists; docker push will be skipped, release continues"
           fi
           echo "version $TAG is fresh, proceeding"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: make fmt-check
+      - run: make check
+      - run: make clippy
+      - run: make test
 
   macos-arm64:
     name: macOS arm64
@@ -241,26 +244,34 @@ jobs:
       DOCKER_PAT: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - name: docker tag must not exist
+      - name: check docker tag
+        id: check
         run: |
           set -euo pipefail
           TAG="${{ github.ref_name }}"
           if curl -fsSL "https://hub.docker.com/v2/repositories/plomid/plomid/tags/${TAG}/" >/dev/null 2>&1; then
-            echo "docker tag plomid/plomid:$TAG already exists; delete it from Docker Hub first or bump to a new version"
-            exit 1
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::docker tag plomid/plomid:$TAG already exists; skipping docker push, release continues"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "docker tag plomid/plomid:$TAG not found, proceeding"
           fi
-          echo "docker tag plomid/plomid:$TAG not found, proceeding"
       - uses: docker/setup-qemu-action@v3
+        if: steps.check.outputs.exists != 'true'
       - uses: docker/setup-buildx-action@v3
+        if: steps.check.outputs.exists != 'true'
       - uses: docker/login-action@v3
+        if: steps.check.outputs.exists != 'true'
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ env.DOCKER_PAT }}
       - uses: actions/download-artifact@v4
+        if: steps.check.outputs.exists != 'true'
         with:
           name: linux-x64
           path: dist/linux-amd64
       - uses: actions/download-artifact@v4
+        if: steps.check.outputs.exists != 'true'
         with:
           name: linux-arm64
           path: dist/linux-arm64
@@ -273,7 +284,9 @@ jobs:
           tar -xzf dist/linux-amd64/plomid-*.tar.gz -C dist/linux-amd64
           tar -xzf dist/linux-arm64/plomid-*.tar.gz -C dist/linux-arm64
           ls -l dist/linux-amd64 dist/linux-arm64
+        if: steps.check.outputs.exists != 'true'
       - uses: docker/build-push-action@v6
+        if: steps.check.outputs.exists != 'true'
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -281,3 +294,96 @@ jobs:
           tags: |
             plomid/plomid:${{ github.ref_name }}
             plomid/plomid:latest
+
+  homebrew:
+    name: update homebrew tap
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout plomid
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: download macOS release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh release download "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --pattern "plomid-${GITHUB_REF_NAME}-macos-arm64.tar.gz" \
+            --pattern "plomid-${GITHUB_REF_NAME}-macos-x64.tar.gz" \
+            --dir dist
+      - name: calculate SHA256
+        id: sha
+        run: |
+          set -euo pipefail
+          ARM64_SHA256="$(sha256sum "dist/plomid-${GITHUB_REF_NAME}-macos-arm64.tar.gz" | awk '{print $1}')"
+          X64_SHA256="$(sha256sum "dist/plomid-${GITHUB_REF_NAME}-macos-x64.tar.gz" | awk '{print $1}')"
+          echo "arm64=${ARM64_SHA256}" >> "$GITHUB_OUTPUT"
+          echo "x64=${X64_SHA256}" >> "$GITHUB_OUTPUT"
+      - name: checkout homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: plomid/homebrew-plomid
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-plomid
+      - name: generate formula
+        env:
+          VERSION: ${{ github.ref_name }}
+          ARM64_SHA256: ${{ steps.sha.outputs.arm64 }}
+          X64_SHA256: ${{ steps.sha.outputs.x64 }}
+        run: |
+          set -euo pipefail
+          NUM_VERSION="${VERSION#v}"
+          REPO="${GITHUB_REPOSITORY}"
+          mkdir -p homebrew-plomid/Formula
+          cat > homebrew-plomid/Formula/plomid.rb <<EOF
+          class Plomid < Formula
+            desc "PLOMID database server (PostgreSQL wire protocol)"
+            homepage "https://github.com/${REPO}"
+            version "${NUM_VERSION}"
+            license "Apache-2.0"
+
+            on_arm do
+              url "https://github.com/${REPO}/releases/download/${VERSION}/plomid-${VERSION}-macos-arm64.tar.gz"
+              sha256 "${ARM64_SHA256}"
+            end
+
+            on_intel do
+              url "https://github.com/${REPO}/releases/download/${VERSION}/plomid-${VERSION}-macos-x64.tar.gz"
+              sha256 "${X64_SHA256}"
+            end
+
+            def install
+              bin.install "plomid-server"
+            end
+
+            service do
+              run [opt_bin/"plomid-server", "--data", var/"plomid", "--host", "127.0.0.1", "--port", "5432"]
+              keep_alive true
+              log_path var/"log/plomid.log"
+              error_log_path var/"log/plomid.log"
+            end
+
+            test do
+              assert_match "plomid", shell_output("#{bin}/plomid-server --help 2>&1", 0)
+            end
+          end
+          EOF
+      - name: commit and push formula
+        working-directory: homebrew-plomid
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "PLOMID Release Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/plomid.rb
+          if git diff --cached --quiet; then
+            echo "Formula already up to date."
+            exit 0
+          fi
+          git commit -m "chore: update plomid to ${VERSION}"
+          git push origin main

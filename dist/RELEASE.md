@@ -4,9 +4,14 @@
 
 1. **Docker Hub**: repository `plomid/plomid`; add repo secrets
    `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` (write access).
-2. **Homebrew tap**: create `github.com/plomid/homebrew-plomid`, copy
-   `dist/homebrew/plomid.rb.template` to `Formula/plomid.rb` on each release
-   with real `VERSION` + `sha256` values (printed by CI in the build logs).
+2. **Homebrew tap**: repo `plomid/homebrew-plomid` plus repo secret
+   `HOMEBREW_TAP_TOKEN` (write access to the tap). The `homebrew` job in
+   the `Release` workflow downloads the macOS tarballs from the just-made
+   GitHub Release, refreshes `Formula/plomid.rb`, and pushes — no manual
+   copy step. `dist/homebrew/plomid.rb.template` stays as documentation.
+3. **install.sh**: `install.sh` at the repo root is the source of truth;
+   publish it to `plomid.in/install.sh` so
+   `curl -fsSL https://plomid.in/install.sh | sh` serves this file.
 3. **Signing (optional but recommended before stable)**:
    - macOS: Apple Developer ID secret `APPLE_DEVELOPER_ID` (+ `APPLE_APP_PASSWORD`,
      `APPLE_TEAM_ID` for notarization). Without it the .dmg ships unsigned
