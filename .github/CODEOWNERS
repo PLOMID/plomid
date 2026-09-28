@@ -1,0 +1,10 @@
+# PLOMID repository ownership
+
+# Default ownership for the entire repository.
+* @sainathsapa @plomid-admin
+
+# Core database engine and kernel.
+/crates/ @sainathsapa @plomid-admin
+
+# CI, release workflows and repository automation.
+/.github/ @sainathsapa @plomid-admin
