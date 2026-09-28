@@ -184,7 +184,7 @@ checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
 
 [[package]]
 name = "crc32c"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 
 [[package]]
 name = "criterion"
@@ -480,7 +480,7 @@ checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "plomid-cli"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "clap",
  "plomid-core",
@@ -488,7 +488,7 @@ dependencies = [
 
 [[package]]
 name = "plomid-columnar"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "crc32c",
  "plomid-core",
@@ -501,11 +501,11 @@ dependencies = [
 
 [[package]]
 name = "plomid-core"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 
 [[package]]
 name = "plomid-executor"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "criterion",
  "plomid-columnar",
@@ -524,7 +524,7 @@ dependencies = [
 
 [[package]]
 name = "plomid-filters"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "crc32c",
  "plomid-core",
@@ -532,7 +532,7 @@ dependencies = [
 
 [[package]]
 name = "plomid-index"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "plomid-core",
  "plomid-storage",
@@ -543,7 +543,7 @@ dependencies = [
 
 [[package]]
 name = "plomid-json"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "plomid-core",
  "plomid-types",
@@ -552,7 +552,7 @@ dependencies = [
 
 [[package]]
 name = "plomid-lifecycle"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "plomid-core",
  "plomid-storage",
@@ -561,14 +561,14 @@ dependencies = [
 
 [[package]]
 name = "plomid-mvcc"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "plomid-core",
 ]
 
 [[package]]
 name = "plomid-network"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "bytes",
  "plomid-core",
@@ -582,15 +582,15 @@ dependencies = [
 
 [[package]]
 name = "plomid-optimizer"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 
 [[package]]
 name = "plomid-security"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 
 [[package]]
 name = "plomid-server"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "clap",
  "plomid-network",
@@ -602,7 +602,7 @@ dependencies = [
 
 [[package]]
 name = "plomid-sql"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "plomid-core",
  "plomid-json",
@@ -613,7 +613,7 @@ dependencies = [
 
 [[package]]
 name = "plomid-storage"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "crc32c",
  "plomid-core",
@@ -624,7 +624,7 @@ dependencies = [
 
 [[package]]
 name = "plomid-txn"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "criterion",
  "plomid-core",
@@ -636,14 +636,14 @@ dependencies = [
 
 [[package]]
 name = "plomid-types"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "plomid-core",
 ]
 
 [[package]]
 name = "plomid-wal"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.1"
 dependencies = [
  "plomid-core",
  "plomid-storage",

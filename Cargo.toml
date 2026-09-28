@@ -60,27 +60,27 @@ identity_op = "allow"
 # `{ workspace = true }` so `cargo-deny`'s `wildcards = "deny"` gate (and
 # version bumps) see one pinned version instead of 49 version-less paths.
 # NOTE: keep these versions in lockstep with [workspace.package] version —
-# `make release-beta` bumps both (search for 0.1.0-beta.2).
+# `make release-beta` bumps both (search for 0.1.0-beta.1).
 [workspace.dependencies]
-plomid-core = { version = "0.1.0-beta.2", path = "crates/core" }
-plomid-storage = { version = "0.1.0-beta.2", path = "crates/storage" }
-plomid-wal = { version = "0.1.0-beta.2", path = "crates/wal" }
-plomid-lifecycle = { version = "0.1.0-beta.2", path = "crates/lifecycle" }
-plomid-mvcc = { version = "0.1.0-beta.2", path = "crates/mvcc" }
-plomid-txn = { version = "0.1.0-beta.2", path = "crates/txn" }
-plomid-sql = { version = "0.1.0-beta.2", path = "crates/sql" }
-plomid-optimizer = { version = "0.1.0-beta.2", path = "crates/optimizer" }
-plomid-json = { version = "0.1.0-beta.2", path = "crates/json" }
-plomid-executor = { version = "0.1.0-beta.2", path = "crates/executor" }
-plomid-network = { version = "0.1.0-beta.2", path = "crates/network" }
-plomid-security = { version = "0.1.0-beta.2", path = "crates/security" }
-plomid-server = { version = "0.1.0-beta.2", path = "crates/server" }
-plomid-cli = { version = "0.1.0-beta.2", path = "crates/cli" }
-plomid-types = { version = "0.1.0-beta.2", path = "crates/types" }
-plomid-columnar = { version = "0.1.0-beta.2", path = "crates/columnar" }
-plomid-index = { version = "0.1.0-beta.2", path = "crates/index" }
-plomid-filters = { version = "0.1.0-beta.2", path = "crates/filters" }
-crc32c = { version = "0.1.0-beta.2", path = "crates/crc32c" }
+plomid-core = { version = "0.1.0-beta.1", path = "crates/core" }
+plomid-storage = { version = "0.1.0-beta.1", path = "crates/storage" }
+plomid-wal = { version = "0.1.0-beta.1", path = "crates/wal" }
+plomid-lifecycle = { version = "0.1.0-beta.1", path = "crates/lifecycle" }
+plomid-mvcc = { version = "0.1.0-beta.1", path = "crates/mvcc" }
+plomid-txn = { version = "0.1.0-beta.1", path = "crates/txn" }
+plomid-sql = { version = "0.1.0-beta.1", path = "crates/sql" }
+plomid-optimizer = { version = "0.1.0-beta.1", path = "crates/optimizer" }
+plomid-json = { version = "0.1.0-beta.1", path = "crates/json" }
+plomid-executor = { version = "0.1.0-beta.1", path = "crates/executor" }
+plomid-network = { version = "0.1.0-beta.1", path = "crates/network" }
+plomid-security = { version = "0.1.0-beta.1", path = "crates/security" }
+plomid-server = { version = "0.1.0-beta.1", path = "crates/server" }
+plomid-cli = { version = "0.1.0-beta.1", path = "crates/cli" }
+plomid-types = { version = "0.1.0-beta.1", path = "crates/types" }
+plomid-columnar = { version = "0.1.0-beta.1", path = "crates/columnar" }
+plomid-index = { version = "0.1.0-beta.1", path = "crates/index" }
+plomid-filters = { version = "0.1.0-beta.1", path = "crates/filters" }
+crc32c = { version = "0.1.0-beta.1", path = "crates/crc32c" }
 
 # The server is commonly deployed as a single release binary. Thin LTO and a
 # single codegen unit improve hot parser/executor/storage paths while keeping
