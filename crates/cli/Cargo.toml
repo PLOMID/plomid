@@ -1,0 +1,22 @@
+[package]
+name = "plomid-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords = ["database", "sql", "pgwire", "postgresql", "database-engine"]
+description = "Native PLOMID database management and diagnostics CLI."
+
+[[bin]]
+name = "plomid"
+path = "src/main.rs"
+
+[dependencies]
+plomid-core = { workspace = true }
+clap = { version = "4", features = ["derive", "env"] }
+
+[lints]
+workspace = true

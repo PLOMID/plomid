@@ -1,0 +1,21 @@
+[package]
+name = "plomid-json"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Document (JSON/JSONB) modality for PLOMID: SQL/JSON paths, operators, and conversions."
+
+[dependencies]
+plomid-core = { workspace = true }
+plomid-types = { workspace = true }
+regex = "1.11"
+
+[lib]
+path = "src/lib.rs"
+
+[lints]
+workspace = true

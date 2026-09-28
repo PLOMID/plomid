@@ -1,0 +1,52 @@
+---
+title: SHOW and DESCRIBE
+description: Every SHOW parameter with its exact output shape, plus DESCRIBE columns.
+---
+
+# SHOW and DESCRIBE
+
+```sql
+SHOW tables;  SHOW table;  SHOW schemas;  SHOW schema;  SHOW schema_name;
+SHOW databases;  SHOW database;  SHOW search_path;
+SHOW server_version;  SHOW timezone;  SHOW transaction_isolation;
+DESCRIBE users;  DESC orders;
+```
+
+## Inventory queries
+
+| Statement | Output column | Rows |
+|---|---|---|
+| `SHOW tables` / `SHOW table` | `table_name` | bare table names in search scope |
+| `SHOW schemas` / `SHOW schema` | `schema` | sorted, deduped (tables imply their schema, default `public`) |
+| `SHOW schema_name` | `schema_name` | single row: `public` |
+| `SHOW databases` / `SHOW database` | `database` | registered database names |
+| `SHOW search_path` | `search_path` | e.g. `"$user", public` (`$user` quoted) |
+
+## Fixed parameters
+
+| Parameter | Returns |
+|---|---|
+| `transaction_read_only` | `off` |
+| `transaction_isolation` | `read committed` |
+| `standard_conforming_strings` | `on` |
+| `integer_datetimes` | `on` |
+| `timezone` | `UTC` |
+| `server_version` | `14.0` |
+| `application_name` | `plomid` |
+| `extra_float_digits` | `3` |
+
+Anything else → `unsupported SHOW parameter: <name>` error. Bare `SHOW;` lists tables.
+
+<Note>**Two true versions:** the wire-protocol startup parameter reports `server_version 17.0` (`server_version_num 170000`), while `SHOW server_version` and `pg_settings` report `14.0` (`140000`). Tools reading the startup packet see 17.0; SQL-level introspection sees 14.0. Both are current v0.1.0 behavior — match on prefix, not equality, if you gate features by version.</Note>
+
+## DESCRIBE output
+
+```sql
+DESCRIBE orders;
+-- columns: column_name | data_type | ordinal_position | is_nullable
+-- is_nullable: YES | NO (from NOT NULL constraints)
+```
+
+`DESC` is an alias. Unknown table → storage error.
+
+**Related:** [pg_catalog](/v0.1.0/reference/pg-catalog) · [Configuration](/v0.1.0/operations/configuration)

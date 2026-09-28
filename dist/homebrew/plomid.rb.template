@@ -1,0 +1,38 @@
+# Homebrew tap formula template for PLOMID beta releases.
+#
+# This file is a TEMPLATE, not a live formula: checksums differ per release.
+# On every tagged release, CI prints the arm64/x64 tarball SHA256 values;
+# paste them below, set VERSION, and push to the tap repository
+# (github.com/plomid/homebrew-plomid, file Formula/plomid.rb):
+#
+#   class Plomid < Formula
+#     desc "PLOMID database server (PostgreSQL wire protocol)"
+#     homepage "https://github.com/plomid/plomid"
+#     url "https://github.com/plomid/plomid/releases/download/VERSION/plomid-VERSION-macos-arm64.tar.gz"
+#     sha256 "PASTE_ARM64_SHA256"
+#     license "Apache-2.0"
+#
+#     on_arm do
+#       url "https://github.com/plomid/plomid/releases/download/VERSION/plomid-VERSION-macos-arm64.tar.gz"
+#       sha256 "PASTE_ARM64_SHA256"
+#     end
+#     on_intel do
+#       url "https://github.com/plomid/plomid/releases/download/VERSION/plomid-VERSION-macos-x64.tar.gz"
+#       sha256 "PASTE_X64_SHA256"
+#     end
+#
+#     def install
+#       bin.install "plomid-server"
+#     end
+#
+#     service do
+#       run [opt_bin/"plomid-server", "--data", var/"plomid", "--host", "127.0.0.1", "--port", "5432"]
+#       keep_alive true
+#       log_path var/"log/plomid.log"
+#       error_log_path var/"log/plomid.log"
+#     end
+#
+#     test do
+#       assert_match "plomid", shell_output("#{bin}/plomid-server --help 2>&1", 0)
+#     end
+#   end

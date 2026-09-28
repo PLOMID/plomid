@@ -1,0 +1,45 @@
+---
+title: Expressions
+description: Literals, casts, CASE, string/pattern forms, and function-call clauses.
+---
+
+# Expressions
+
+Precedence (low→high, `crates/sql/src/parser/expressions.rs`): `OR → AND → NOT → comparison → || → &|#<<>> → +− → * / % / JSON ops → ^ (right-assoc) → unary → primary`.
+
+## Literals
+
+```sql
+SELECT 1, 9223372036854775807::bigint, 1.25, 1e-3, 'text', E'a\nb\u0041', B'0101', NULL, TRUE;
+SELECT DATE '2026-01-01', TIME '12:00:00', TIMESTAMP '2026-01-01 12:00:00', INTERVAL '7 days';
+SELECT ARRAY[1,2,3], ARRAY(SELECT id FROM users), JSON '{"a":1}';
+SELECT CURRENT_DATE, CURRENT_TIMESTAMP, LOCALTIME, LOCALTIMESTAMP;
+```
+
+Integers beyond `i64` become `Numeric`. `E'…'` processes escapes. `INTERVAL '…'` parses to months/days/micros.
+
+## Casts and type functions
+
+```sql
+SELECT CAST(x AS INT), x::TEXT, x::DOUBLE PRECISION, x::VARCHAR(10), x::INT[];
+SELECT pg_typeof(x), format_type(x, NULL), POSITION('@' IN email), SUBSTRING(name FROM 2 FOR 3);
+```
+
+Multi-word types (`double precision`, `timestamp with time zone`) and `TYPE[]` / `(n,m)` preserved. `VALUE` is usable as a column name.
+
+## Conditionals
+
+```sql
+SELECT CASE WHEN total > 100 THEN 'big' WHEN total > 10 THEN 'mid' ELSE 'small' END FROM orders;
+SELECT CASE status WHEN 'a' THEN 1 ELSE 0 END FROM orders;
+SELECT COALESCE(nickname, name, '?'), NULLIF(status, ''), EXISTS (SELECT 1 FROM orders WHERE user_id = users.id);
+SELECT a IS DISTINCT FROM b FROM t;
+```
+
+## Predicates
+
+`IS [NOT] NULL|TRUE|FALSE|UNKNOWN`, `IS [NOT] JSON [VALUE|OBJECT|ARRAY|SCALAR]`, `[NOT] IN (…|(SELECT…))`, `[NOT] BETWEEN`, `[NOT] LIKE [ESCAPE]`, `ILIKE` (case ignored single-table path), `SIMILAR TO` (→ `similar_to`), regex `~ ~* !~ !~*`, quantified `= ANY|ALL|SOME (SELECT…)` / `= ANY(array)`.
+
+## Function-call clauses (parsed, mostly carried)
+
+`func(DISTINCT args)`, `func(*)`, `func(args ORDER BY …)`, `func(args) FILTER (WHERE …)`, `RETURNING type`, `NULL|ABSENT ON NULL`, `WITH|WITHOUT UNIQUE KEYS`, `DEFAULT … ON ERROR|EMPTY`, `FORMAT JSON`, `WITH|WITHOUT WRAPPER`, window `OVER (…)`.

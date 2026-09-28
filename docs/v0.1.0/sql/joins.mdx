@@ -1,0 +1,26 @@
+---
+title: Joins
+description: INNER, LEFT, RIGHT, FULL, CROSS, USING, lateral, table functions, and execution shapes.
+---
+
+# Joins
+
+```sql
+SELECT * FROM a JOIN b ON a.id = b.id;
+SELECT * FROM a LEFT JOIN b ON a.id = b.id;
+SELECT * FROM a RIGHT JOIN b USING (id);
+SELECT * FROM a FULL JOIN b ON a.id = b.id;
+SELECT * FROM a CROSS JOIN b;   SELECT * FROM a, b;
+SELECT * FROM users u, LATERAL jsonb_each(u.payload) AS e;
+SELECT * FROM generate_series(1,3) AS g(n) WITH ORDINALITY;
+```
+
+`JoinKind::{Inner,Left,Right,Full,Cross}` (`ast.rs`). `USING` pre-expanded to equalities. `FROM t x(a,b)` derived column aliases supported.
+
+## Execution (`join/support.rs`)
+
+Nested-loop / hash / indexed / lateral shapes; `SELECT *` and `t.*` expansion in join order; ambiguous column → error; implicit lateral when RHS references outer columns.
+
+## What helps performance
+
+Equality and range join keys benefit from B-tree indexes; time-ordered joins benefit from `ts` indexes + zone-map pruning on columnar segments. Verify with [EXPLAIN](/v0.1.0/sql/explain).

@@ -1,0 +1,71 @@
+# 
+# © 2026 PLOMID Technology Solutions
+#
+# PLOMID
+# Platform for Modern Intelligence and Data
+#
+# Author: Sainath Sapa
+# GitHub: https://github.com/sainathsapa
+#
+# Licensed under the Apache License, Version 2.0;
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# nfpm config TEMPLATE for the Linux .deb/.rpm (do not edit the generated
+# copy). dist/linux/make-packages.sh substitutes @@VERSION@@, @@ARCH@@ and
+# @@STAGE@@ into a generated file before invoking nfpm, so no tool version
+# needs to support environment expansion inside the config.
+name: plomid
+arch: "@@ARCH@@"
+version: "@@VERSION@@"
+section: database
+priority: optional
+maintainer: PLOMID <info.djsai@gmail.com>
+description: |-
+  PLOMID database server (PostgreSQL wire protocol).
+  Single static-ish binary plus a systemd unit; data lives in /var/lib/plomid.
+vendor: PLOMID
+homepage: https://github.com/plomid/plomid
+license: Apache-2.0
+contents:
+  - src: @@STAGE@@/plomid-server
+    dst: /usr/local/bin/plomid-server
+    type: file
+    file_info:
+      mode: 0755
+  - src: @@STAGE@@/plomid.service
+    dst: /lib/systemd/system/plomid.service
+    type: file
+    file_info:
+      mode: 0644
+  - src: @@STAGE@@/README.txt
+    dst: /usr/share/doc/plomid/README.txt
+    type: file
+    file_info:
+      mode: 0644
+  - src: @@STAGE@@/plomid-emblem-copper.png
+    dst: /usr/share/pixmaps/plomid.png
+    type: file
+    file_info:
+      mode: 0644
+  - src: @@STAGE@@/plomid.desktop
+    dst: /usr/share/applications/plomid.desktop
+    type: file
+    file_info:
+      mode: 0644
+scripts:
+  postinstall: @@STAGE@@/postinstall.sh
+  preremove: @@STAGE@@/preremove.sh
+deb:
+  fields:
+    Depends: adduser
+rpm:
+  group: Applications/Databases
+  prefixes: ["/usr"]

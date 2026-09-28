@@ -1,0 +1,38 @@
+# Rust build artifacts
+/target/
+
+# Rust IDE/editor files
+.vscode/
+.idea/
+/specs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment / secrets
+.env
+.env.*
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Coverage / profiling
+coverage/
+*.profraw
+/data/
+
+# Python test/benchmark artifacts
+__pycache__/
+*.py[cod]
+
+# Generated benchmark output
+benchmark_results/
+
+# Backup files
+*~

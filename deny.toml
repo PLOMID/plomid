@@ -1,0 +1,50 @@
+# 
+# © 2026 PLOMID Technology Solutions
+# PLOMID — Platform for Modern Intelligence and Data
+# Author: Sainath Sapa
+# GitHub: https://github.com/sainathsapa
+[advisories]
+yanked = "deny"
+ignore = []
+
+[licenses]
+# Allow-list only: any license not listed here (including unlicensed crates
+# and copyleft licenses such as GPL/AGPL/LGPL, BUSL, SSPL) fails the check.
+# This preserves the previous explicit `unlicensed/copyleft/default = "deny"`
+# policy under the current schema, which no longer has those keys.
+confidence-threshold = 0.8
+allow = [
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "Unicode-3.0",
+]
+exceptions = []
+
+[licenses.private]
+ignore = false
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+highlight = "all"
+allow = []
+deny = [
+    { name = "clickhouse", reason = "PLOMID owns its kernel and must not wrap external database engines." },
+    { name = "duckdb", reason = "PLOMID owns its kernel and must not wrap external database engines." },
+    { name = "librocksdb-sys", reason = "PLOMID owns its kernel and must not wrap external database engines." },
+    { name = "mysql", reason = "PLOMID owns its kernel and must not wrap external database engines." },
+    { name = "postgres", reason = "PLOMID owns its kernel and must not wrap external database engines." },
+    { name = "rocksdb", reason = "PLOMID owns its kernel and must not wrap external database engines." },
+    { name = "rusqlite", reason = "PLOMID owns its kernel and must not wrap external database engines." },
+    { name = "tokio-postgres", reason = "PLOMID owns its kernel and must not wrap external database engines." },
+]
+skip = []
+skip-tree = []
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

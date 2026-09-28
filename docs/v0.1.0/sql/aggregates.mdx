@@ -1,0 +1,29 @@
+---
+title: Aggregations
+description: COUNT, SUM, AVG, MIN/MAX, STRING_AGG, ARRAY_AGG, JSON aggregates, GROUPING SETS, FILTER, DISTINCT.
+---
+
+# Aggregations
+
+`is_aggregate_function`: `COUNT SUM AVG MIN MAX STRING_AGG ARRAY_AGG JSON_AGG JSONB_AGG JSON_OBJECT_AGG JSONB_OBJECT_AGG JSON_ARRAYAGG JSON_OBJECTAGG` (`crates/executor/src/catalog_fn.rs`).
+
+```sql
+SELECT count(*), count(email), count(DISTINCT city) FROM users;
+SELECT sum(total), avg(total), min(total), max(total) FROM orders;
+SELECT string_agg(name, ', ' ORDER BY name), array_agg(id ORDER BY id) FROM users;
+SELECT json_agg(payload), jsonb_agg(payload), json_object_agg(name, id) FROM users;
+SELECT user_id, count(*) FROM orders GROUP BY user_id HAVING count(*) > 1;
+SELECT a, b, count(*) FROM t GROUP BY GROUPING SETS ((a,b),(a),());
+SELECT count(*) FILTER (WHERE total > 100) FROM orders;
+```
+
+## Behavior (`query/aggregate.rs`, `join/aggregate.rs`)
+
+- `COUNT(*)` counts rows; `COUNT(expr)` skips NULL; `COUNT(DISTINCT)` dedups by `to_sql_text` (unifies `1`/`1.0`).
+- `SUM/AVG`: int (`Int8`), exact `Numeric`, `f64` paths; empty → NULL; `AVG(int)` → normalized `Numeric` (PG typing).
+- `MIN/MAX` via `value_cmp`, NULL skipped, empty → NULL.
+- `JSON_AGG` keeps per-row values incl. SQL NULL→JSON null; `JSON_OBJECT_AGG` skips NULL keys.
+- Modifiers: `DISTINCT` (fully distinct-aware for `COUNT`), `FILTER (WHERE …)`, `agg(x ORDER BY … [NULLS FIRST|LAST])`.
+- Bare `SELECT COUNT(*) ` without `WHERE` answered by key count.
+
+**General engine trigger:** `string_agg/array_agg/json_*agg`, non-column GROUP BY, multi-sets, or GROUP BY+ORDER BY.

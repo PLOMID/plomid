@@ -1,0 +1,26 @@
+---
+title: INSERT
+description: VALUES, DEFAULT VALUES, SELECT-sourced, ON CONFLICT, RETURNING.
+---
+
+# INSERT
+
+```text
+INSERT INTO table [(cols)] {VALUES (v,…) [, (…)]… | DEFAULT VALUES | SELECT …}
+[ON CONFLICT [(cols)] DO NOTHING | DO UPDATE SET col = expr,… [WHERE expr]]
+[RETURNING targets]
+```
+
+```sql
+INSERT INTO users VALUES (1, 'ada'), (2, 'grace');
+INSERT INTO users (id, name) VALUES (3, upper('linus'));
+INSERT INTO archive SELECT * FROM orders WHERE placed_at < DATE '2024-01-01';
+INSERT INTO users VALUES (1, 'ada') ON CONFLICT (id) DO NOTHING;
+INSERT INTO users VALUES (1, 'ADA') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO users VALUES (5, 'hedy') RETURNING id, name;
+INSERT INTO t DEFAULT VALUES;
+```
+
+Values accept `DEFAULT`, literals, casts, `ARRAY[…]`, arbitrary scalar expressions (`InsertValue::Expression`). `INSERT…SELECT` is materialized via the join engine then the shared DML path (`Executor::materialize_insert_source`).
+
+**Constraints:** `COPY` is separate from `INSERT`; file `COPY` rejected. See [UPDATE](/v0.1.0/sql/update) for `EXCLUDED` scope notes and [Compatibility](/v0.1.0/sql/compatibility).

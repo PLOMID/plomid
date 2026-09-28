@@ -1,0 +1,38 @@
+---
+title: Executor — what it can execute
+description: Complete dispatch map — every statement shape, which engine path, what it returns.
+---
+
+# Executor — what it can execute
+
+<Warning>**Internal with public effects.** Source: `crates/executor/src/executor.rs:execute_autocommit`, `ddl.rs`, `dml.rs`, `transaction.rs`, `query/*`, `join/*`. Application developers: use SQL pages. Engine contributors: this is the map.</Warning>
+
+## Dispatch table
+
+| Statement | Path | Returns |
+|---|---|---|
+| `SELECT` (single-table) | `query/select.rs:execute_select` | `Rows` |
+| `SELECT` (general: multi-agg/non-col GROUP BY/sets/GROUP+ORDER) | `join/*` general engine | `Rows` |
+| `VALUES` bare / `FROM (VALUES)` | `join::execute_statement` | `Rows` |
+| `UNION/INTERSECT/EXCEPT` | `join/statement.rs:execute_set_operation` (arity-checked) | `Rows` |
+| `WITH [RECURSIVE]` | `join/plan.rs:execute_with` | `Rows` |
+| scalar `(SELECT)` / `EXISTS` / `IN` / `ANY/ALL` / `ARRAY(SELECT)` | `OuterContext`, depth-guarded | value/bool/rows |
+| `INSERT` | `dml.rs:execute_insert_rows[_txn]` + `materialize_insert_source` | `Inserted(n)` / `Rows` w/ RETURNING |
+| `UPDATE` / `DELETE` | `execute_update/delete[_txn]` + `update_from::materialize_*` | `Updated/Deleted` / `Rows` |
+| `TRUNCATE` | accounted write path | `Created`-family |
+| `CREATE TABLE/VIEW/SEQ/TYPE/DOMAIN/INDEX` | `ddl.rs:execute_ddl` | `Created(name)` |
+| `ALTER TABLE` subset / `DROP` / `COMMENT` | `ddl.rs` | `Created` |
+| `BEGIN…COMMIT/ROLLBACK` groups | `transaction.rs:execute_transaction_group` | `Committed/RolledBack` + staged results |
+| `SET/SHOW/DESCRIBE/USE` | `execute_show` + session/database layers | `Rows/Set/Created` |
+| `GRANT role TO member` | stub `Created("GRANT ROLE")` | `Created` |
+| `EXPLAIN [ANALYZE]` | `query/explain.rs:explain_statement` | `Rows{QUERY PLAN}` |
+| `COPY STDIN/STDOUT` | wire frames; autocommit-without-frames → error | copy protocol |
+| `VACUUM/ANALYZE/REINDEX/DO/PERFORM/LISTEN…` | no-op/accounted/stub | `Created`/ok |
+| `generate_series/unnest/json SRFs` | table-function path + `WITH ORDINALITY` | `Rows` |
+| Window/aggregate/window-agg | `window.rs:compute_window` + `aggregate.rs` | `Rows` |
+
+## Scan → filter → project → group → window → order → limit
+
+`scan.rs:value_cmp` (comparisons incl. time-normalized pruning) → `expr.rs:evaluate_predicate` (only `true` passes) → `project.rs` (`*` expansion) → `group.rs`/`aggregate.rs` (sets/rollup/cube normalized) → `window.rs` (partition sort + peer groups + frames) → `ORDER BY` (nulls default) → `LIMIT/OFFSET` (int-only). `preview_dml_count`/`validate_dml_strict` guard staged writes; `after_commit` maintenance accounting only on commit.
+
+**Related:** [Query pipeline](/v0.1.0/architecture/query-pipeline) · [How it works](/v0.1.0/architecture/how-it-works)

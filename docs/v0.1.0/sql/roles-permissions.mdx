@@ -1,0 +1,59 @@
+---
+title: Roles, users, and permissions
+description: CREATE ROLE/USER, GRANT, privilege functions, pg_roles — the complete v0.1.0 access model.
+---
+
+# Roles, users, and permissions
+
+## Model in one paragraph
+
+v0.1.0 has **authentication** (who connects: SCRAM/MD5/cleartext via `plomid-server --username/--password/--auth`) and **catalog visibility** (`pg_roles`, `pg_user`, `has_*_privilege` stubs returning `true` so tools browse). It does **not** have enforced object-level authorization. `GRANT` records membership; nothing checks it at query time.
+
+## CREATE ROLE / USER — parses
+
+```text
+CREATE ROLE|USER name [LOGIN|NOLOGIN] [PASSWORD 'x'] [...]
+```
+
+```sql
+CREATE ROLE analyst LOGIN PASSWORD 'secret';
+CREATE USER etl LOGIN PASSWORD 'secret';
+CREATE ROLE readonly NOLOGIN;
+```
+
+`CreateStatement::Role { name, login, password }`. No role-based connection gating in v0.1.0 — server `--username/--password` remains the gate. `COMMENT ON ROLE name IS '...'` accepted.
+
+## GRANT — one form supported
+
+```text
+GRANT role TO member
+```
+
+```sql
+GRANT analyst TO etl;
+```
+
+Source: `crates/sql/src/parser/grant.rs` → `Statement::GrantRole` → `QueryResult::Created("GRANT ROLE")` (`ddl.rs:1055`). Any other `GRANT` shape (`GRANT SELECT ON t TO r`, `GRANT ALL PRIVILEGES`) is **not** implemented — it errors at parse.
+
+## Privilege introspection (stubbed true)
+
+```sql
+SELECT has_table_privilege('orders', 'SELECT');      -- true (stub)
+SELECT has_schema_privilege('public', 'USAGE');      -- true
+SELECT has_database_privilege('plomid', 'CONNECT');  -- true
+SELECT * FROM pg_roles;
+SELECT * FROM pg_user;
+```
+
+`func_has_privilege` (`crates/types/src/func.rs:217`) accepts any arity and returns `true` so DBeaver/psql catalog browsing never aborts. Do not read this as "all access granted by policy" — it means **no privilege enforcement exists** to deny.
+
+## What CTOs/architects should know
+
+| Expectation | v0.1.0 reality |
+|---|---|
+| Separate DB users with passwords | Server single identity; use network isolation + secrets mgmt |
+| `GRANT SELECT` enforcement | Not enforced; enforce in app/service layer |
+| Audit of who did what | Connection/query logs (`connection_id`, statement type, duration); values never logged |
+| Future RBAC | Roadmap, not documented as supported |
+
+**Related:** [Run the server](/v0.1.0/operations/run-server) (auth modes) · [`pg_catalog`](/v0.1.0/reference/pg-catalog) · [Compatibility](/v0.1.0/sql/compatibility)

@@ -1,0 +1,49 @@
+---
+title: JSON and document data
+description: JSON/JSONB model, operators, functions, JSON_TABLE, NULL/missing rules, and relational combinations.
+---
+
+# JSON and document data
+
+**Status:** Supported. Model `PgValue::Json/Jsonb` (`crates/types`), path engine `crates/json/src/path.rs` (full SQL/JSON: `$ @ $var .key .* .. [*] [n] [?(pred)]`, methods `size/type/starts_with/like_regex/datetime/keyvalue`, lax/strict), ops `crates/json/src/ops.rs`, table function `table.rs`.
+
+## Operators
+
+See [Operators](/v0.1.0/sql/operators) table: `-> ->> #> #>> #- @> <@ ? ?| ?& @? @@`, `-` subtract, subscripts, `(r).f`.
+
+## Functions
+
+Constructors `json_build_object/array json_object(b) json_array(b) json json_scalar json_value query serialize`; accessors `jsonb_extract_path(_text) jsonb_array_elements(_text) jsonb_object_keys jsonb_each(_text) jsonb_typeof jsonb_pretty`; mutators `jsonb_set jsonb_set_lax jsonb_insert json_set_path json_delete_path jsonb_strip_nulls`; aggregates `json_agg jsonb_agg json_object_agg`; `json_populate_record(set)`; `json_query/json_value/json_exists`; `row_to_json(ROW(…))`.
+
+```sql
+SELECT jsonb_build_object('a', 1, 'b', json_build_array(1,2));
+SELECT jsonb_set(payload, '{user,name}', '"ADA"'), jsonb_strip_nulls(payload) FROM events;
+SELECT json_agg(payload ORDER BY id), json_object_agg(name, id) FROM users;
+```
+
+## JSON_TABLE
+
+```sql
+SELECT jt.sku, jt.qty FROM JSON_TABLE(
+  '{"items":[{"sku":"a","qty":2}]}', '$.items[*]'
+  COLUMNS (sku TEXT PATH '$.sku', qty INT PATH '$.qty', n FOR ORDINALITY)
+) AS jt;
+```
+
+`NESTED PATH … COLUMNS(…)`, `EXISTS`, `DEFAULT … ON EMPTY|ERROR`, `FORMAT JSON` supported.
+
+## Missing vs NULL (contract)
+
+- Missing field → SQL NULL → `WHERE` treats as not-true; aggregates skip; `ORDER BY` default applies.
+- `IS JSON` on NULL → NULL; on invalid text → false.
+- `json_agg` preserves SQL NULL as JSON null; `json_object_agg` skips NULL keys.
+- `UPDATE … SET payload['k']` writes through subscripts.
+
+## Relational + JSON combos
+
+```sql
+SELECT u.name, e.payload->>'page' FROM users u JOIN events e ON e.payload->>'user_id' = u.id::text;
+SELECT * FROM events WHERE payload @> '{"ok": true}' AND ts > now() - INTERVAL '1 day';
+```
+
+Index the hot path: `CREATE INDEX … ON events ((payload->>'team'))`. See [Indexes](/v0.1.0/indexes/overview).

@@ -1,0 +1,27 @@
+[package]
+name = "crc32c"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Isolated, allocation-free CRC32C (Castagnoli) component for PLOMID with x86_64/aarch64 hardware acceleration and a portable software fallback."
+
+[lib]
+path = "src/lib.rs"
+
+[[bench]]
+name = "crc"
+harness = false
+
+[lints.rust]
+# PLOMID workspace policy sets `unsafe_code = "forbid"` for every member. This
+# component is the single sanctioned exception: CPU-specific CRC instructions
+# are only reachable through `unsafe` intrinsics. The override is deliberately
+# scoped to this crate alone; `src/software.rs` and `src/reference.rs`
+# re-forbid `unsafe` internally, so unsafe blocks exist only inside
+# `src/x86_64.rs` and `src/aarch64.rs`, each guarded by a runtime CPU-feature
+# check performed before the code can ever be selected.
+unsafe_code = "allow"

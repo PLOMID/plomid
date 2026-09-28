@@ -1,0 +1,40 @@
+---
+title: Configuration
+description: Every server and lifecycle option — name, type, default, behavior.
+---
+
+# Configuration
+
+Source: `crates/server/src/config.rs:ServerConfig::parse`, `crates/lifecycle/src/config.rs`, `crates/core/src/constants.rs`.
+
+## Server flags (CLI + env)
+
+| Flag | Env | Type | Default | Behavior |
+|---|---|---|---|---|
+| `--host/-H` | `PLOMID_HOST` | addr | `127.0.0.1` | bind; non-loopback requires TLS or `--allow-remote-plaintext` |
+| `--port/-p` | `PLOMID_PORT` | u16 | `5432` | |
+| `--data/-D` | `PLOMID_DATA_DIR` | path | `./data` | created if missing |
+| `--username/-U` | `PLOMID_USER` | string | `plomid` | SCRAM/MD5 identity |
+| `--password/-W` | `PLOMID_PASSWORD` | string | `plomid` (server) | note: CLI default `secret`, start.sh default `secret` |
+| `--log-level` | — | enum | `info` | `trace\|debug\|info\|warn\|error` |
+| `--auth` | `PLOMID_AUTH` | enum | `scram` | `scram\|password\|md5\|none` (lowercased) |
+| `--tls` | — | flag | off | requires `--tls-cert/--tls-key`; handshake currently declined |
+| `--tls-cert/--tls-key` | `PLOMID_TLS_CERT/KEY` | path | `""` | empty → exit 1 when `--tls` |
+| `--tls-required` | — | flag | off | without `--tls` → error |
+| `--checkpoint-wal-bytes` | `PLOMID_CHECKPOINT_WAL_BYTES` | bytes | `67108864` | `0` disables |
+| `--checkpoint-segments` | `PLOMID_CHECKPOINT_SEGMENTS` | u64 | `16` | `0` disables |
+| `--checkpoint-interval-secs` | `PLOMID_CHECKPOINT_INTERVAL_SECS` | secs | `900` | `0` disables |
+| `--allow-remote-plaintext` | `PLOMID_ALLOW_INSECURE_REMOTE` | flag | off | opt-in for non-loopback without TLS |
+| `--no-auto-checkpoint` | — | flag | off | disables auto checkpoint |
+
+`validate_security()`: `--tls-required` w/o `--tls` → error; `auth none` + non-loopback → error; non-loopback w/o tls w/o opt-in → error with remediation message.
+
+## Lifecycle / engine
+
+`pool_capacity=1024`, `segment_size_bytes=8 MiB`, `wal_segment_size_bytes=8 MiB`, `wal_durability=Force`. `ConnectionLimits::default max_connections=100000` (0 rejected). `DEFAULT_DATABASE=plomid`, `MAX_FRONTEND_MESSAGE_SIZE=64 MiB`.
+
+## Logging
+
+`PLOMID_LOG_LEVEL` or `RUST_LOG` (e.g. `RUST_LOG=server=debug,server::protocol=trace`, `plomid::perf=debug` for timers). Connection/query logs carry `connection_id query_id statement_type sql_len elapsed_ms`; values/passwords never logged.
+
+Full CLI surface: [CLI](/v0.1.0/operations/cli) · Reference table: [Config reference](/v0.1.0/reference/config-reference) (same content, denser).

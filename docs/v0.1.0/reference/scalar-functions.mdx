@@ -1,0 +1,100 @@
+---
+title: Scalar functions — complete catalog
+description: Every scalar, array, temporal, session, and catalog function with signature and example.
+---
+
+# Scalar functions — complete catalog
+
+<Note>Gate: `is_scalar_function()` (`scalar.rs`) → `builtin_functions()` (`types/func.rs`) → executor arms. Zero-arg session functions also work as bare column refs. All examples source-verified.</Note>
+
+## String
+
+```sql
+SELECT lower('ADA'), upper('ada'), length('hello'), char_length('héllo'), character_length('abc');
+SELECT trim('  x  '), btrim('xxayxx', 'x'), ltrim('---a', '-'), rtrim('a___', '_');
+SELECT substring('hello' FROM 2 FOR 3), substr('hello', 2, 3);
+SELECT concat('a', NULL, 'b'), concat_ws(', ', 'a', NULL, 'b'), concat_ws(NULL, 'a');
+SELECT replace('aaa', 'a', 'b'), left('hello', 2), right('hello', 2), reverse('abc');
+SELECT position('@' IN 'a@b'), format('hello %s %I %L', 'x', 'col', 'lit');
+SELECT regexp_replace('abc123', '[0-9]+', 'N'), regexp_match('abc123', '[0-9]+');
+SELECT regexp_matches('a1 b2', '[0-9]'), regexp_substr('abc123', '[0-9]+');
+```
+
+`format` specifiers: `%s` text, `%I` identifier-quoted, `%L` literal-quoted. `concat` skips NULLs; `concat_ws` NULL sep → NULL.
+
+## Math
+
+```sql
+SELECT abs(-3), round(3.567, 2), floor(3.9), ceil(3.1), ceiling(3.1);
+SELECT power(2, 10), pow(2, 10), sqrt(2), mod(10, 3);
+SELECT pi(), random(), sin(1), cos(1), tan(1), ln(2.7), log(10, 100), exp(1);
+SELECT greatest(1, 5, 3), least(1, 5, 3);
+```
+
+## Array (gate names use the `array_` prefix)
+
+```sql
+SELECT ARRAY[1,2,3], array_length(ARRAY[1,2], 1), array_upper(ARRAY[1,2], 1);
+SELECT cardinality(ARRAY[1,2,3]), array_append(ARRAY[1], 2), array_prepend(0, ARRAY[1]);
+SELECT array_cat(ARRAY[1], ARRAY[2]), array_position(ARRAY['a','b'], 'b');
+SELECT array_to_string(ARRAY['a','b'], ','), string_to_array('a,b', ',');
+SELECT * FROM unnest(ARRAY['a','b']) AS u(x);
+SELECT _pg_expandarray(ARRAY[1,2]);
+```
+
+Subscript `arr[i]` 1-based. `= ANY(array)` / `<> ALL(array)` lower to `any_equal/all_equal/any_not_equal/all_not_equal`. `unnest` is also a `FROM` table function.
+
+## Pattern-match predicates (backing `~` / `LIKE` / `SIMILAR TO`)
+
+```sql
+SELECT regex_match('abc123', '[0-9]+'), regex_match_i('ABC', 'abc');
+SELECT regex_not_match('abc', '[0-9]+'), regex_not_match_i('ABC', '[0-9]+');
+SELECT similar_to('abc', 'a%'), similar_not('abc', 'z%');
+SELECT 5 = ANY (ARRAY[1,5]), 5 <> ALL (ARRAY[1,2]);  -- any_equal / all_not_equal family
+```
+
+## Temporal ctors
+
+```sql
+SELECT make_date(2026,1,1), make_timestamp(2026,1,1,12,0,0);
+SELECT age(now()), age(now(), DATE '2020-01-01');
+SELECT date_trunc('month', now()), date_part('dow', now()), EXTRACT(year FROM now());
+```
+
+## Session / clock
+
+```sql
+SELECT version(), current_database(), current_schema(), current_user(), session_user();
+SELECT pg_backend_pid(), current_date(), current_time(), current_timestamp(), now();
+SELECT current_setting('server_version');
+```
+
+## Range and network constructors
+
+```sql
+SELECT int4range(1, 10);                    -- [1,10) int range
+SELECT int4multirange(int4range(1,3), int4range(5,7));
+SELECT '[1,10)'::int4range, '{[1,3),[5,7)}'::int4multirange;
+SELECT 5 <@ int4range(1,10), int4range(1,10) @> 5;
+SELECT int4range(1,5) && int4range(4,10);
+SELECT inet('127.0.0.1'), inet('10.0.0.1', 24);
+```
+
+Only `int4range` / `int4multirange` constructors exist in v0.1.0 — see [Ranges](/v0.1.0/data/ranges). Note `lower()/upper()` in PLOMID are **text** functions.
+
+## Catalog / misc
+
+```sql
+SELECT pg_typeof(1), format_type(23, NULL), pg_get_expr('x', 1);
+SELECT pg_total_relation_size('orders'), pg_relation_size('orders'), pg_table_size('orders'), pg_indexes_size('orders');
+SELECT pg_tablespace_location(1663), pg_get_partkeydef(1), pg_stat_get_numscans(1);
+SELECT pg_table_is_visible('orders'), has_table_privilege('orders', 'SELECT');
+SELECT obj_description(1, 'pg_class'), col_description(1, 1), shobj_description(1, 'x');
+SELECT quote_ident('my col'), inet('127.0.0.1'), int4range(1, 10), to_regclass('orders');
+SELECT row(1, 'a'), row_to_json(ROW(1, 'ada')), to_json(1), to_jsonb('{"a":1}');
+SELECT coalesce(NULL, 1), nullif('a', 'a'), lastval(), user();
+```
+
+No vector-distance functions in v0.1.0.
+
+**Related:** [JSON functions](/v0.1.0/json/functions) · [Aggregates](/v0.1.0/sql/aggregates) · [Window](/v0.1.0/sql/window-functions)

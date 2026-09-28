@@ -1,0 +1,33 @@
+---
+title: NULL semantics
+description: The observable NULL contract — comparisons, logic, IN, aggregates, ordering, JSON.
+---
+
+# NULL semantics
+
+**Classification:** Supported behavior (verified in the executor's expression, comparison, and row-equality paths).
+
+| Case | Result |
+|---|---|
+| `NULL = NULL`, `NULL <> 1`, `NULL < 1` | `NULL` |
+| `WHERE NULL` / `WHERE <null predicate>` | row filtered (only `Bool(true)` passes; `Equal` special-cases NULL→false) |
+| `NOT NULL` | `NULL` |
+| `NULL AND TRUE` | `false` here (**differs from strict 3VL** where it is NULL) — implementation uses is-true checks |
+| `x IN (…, NULL)` no match | `NULL`; match → `true` |
+| `BETWEEN/LIKE/comparison` with NULL | `NULL` |
+| `IS NULL / IS NOT NULL`, `IS DISTINCT FROM` | NULL-aware (`NULL IS DISTINCT FROM NULL → false`) |
+| `IS TRUE/FALSE/UNKNOWN` | three-valued test |
+| `IS JSON` with NULL | `NULL`; invalid text → `false` |
+| Aggregates | skip NULL except `COUNT(*)`; `SUM/AVG/MIN/MAX` empty → NULL; `json_agg` keeps NULL as JSON null |
+| `concat` / `concat_ws` | `concat` skips NULLs; `concat_ws` skips NULL args, NULL sep → NULL |
+| `ORDER BY` | default `ASC→NULLS LAST`, `DESC→NULLS FIRST`; overridable |
+| Missing JSON field | NULL (see [JSON](/v0.1.0/data/json)) |
+
+```sql
+SELECT NULL = NULL;            -- NULL
+SELECT 1 WHERE NULL;           -- zero rows
+SELECT count(*), count(nick) FROM users;
+SELECT * FROM t ORDER BY x;    -- NULLS LAST
+```
+
+**Common mistake:** `WHERE col = NULL` never matches — use `WHERE col IS NULL`.

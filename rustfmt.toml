@@ -1,0 +1,11 @@
+# 
+# © 2026 PLOMID Technology Solutions
+# PLOMID — Platform for Modern Intelligence and Data
+# Author: Sainath Sapa
+# GitHub: https://github.com/sainathsapa
+edition = "2021"
+max_width = 100
+newline_style = "Unix"
+reorder_imports = true
+use_field_init_shorthand = true
+use_try_shorthand = true

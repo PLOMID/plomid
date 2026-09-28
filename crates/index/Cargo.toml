@@ -1,0 +1,34 @@
+[package]
+name = "plomid-index"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Index primitives for PLOMID: in-memory ART and persistent B+Tree SQL indexes."
+
+[dependencies]
+plomid-core = { workspace = true }
+plomid-storage = { workspace = true }
+plomid-wal = { workspace = true }
+plomid-txn = { workspace = true }
+tracing = "0.1"
+
+[dev-dependencies]
+plomid-txn = { workspace = true }
+
+[lib]
+path = "src/lib.rs"
+
+[[bench]]
+name = "art"
+harness = false
+
+[[bench]]
+name = "btree"
+harness = false
+
+[lints]
+workspace = true

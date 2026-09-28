@@ -1,0 +1,58 @@
+---
+title: SQL fundamentals
+description: The smallest complete SQL mental model for PLOMID.
+---
+
+# SQL fundamentals
+
+## The five statements you need first
+
+```sql
+CREATE TABLE users (id BIGINT PRIMARY KEY, name TEXT NOT NULL);
+INSERT INTO users VALUES (1, 'ada'), (2, 'grace');
+SELECT id, name FROM users WHERE id > 1 ORDER BY id LIMIT 10;
+UPDATE users SET name = 'ADA' WHERE id = 1;
+DELETE FROM users WHERE id = 2;
+```
+
+## Clause order (fixed)
+
+```text
+SELECT targets → FROM → WHERE → GROUP BY → HAVING → ORDER BY → LIMIT → OFFSET
+```
+
+`WHERE` filters rows, `GROUP BY` + aggregates summarize, `HAVING` filters groups, `ORDER BY` sorts (with `NULLS FIRST|LAST`), `LIMIT`/`OFFSET` paginate. Full surface: [SELECT](/v0.1.0/sql/select).
+
+## Filtering, sorting, paginating
+
+```sql
+SELECT * FROM orders WHERE total > 100 AND placed_at >= DATE '2026-01-01'
+ORDER BY placed_at DESC NULLS LAST LIMIT 20 OFFSET 40;
+```
+
+`LIMIT`/`OFFSET` accept only integer literals or casts thereof (`LIMIT 10`, `LIMIT '10'::int`); anything else errors at parse time.
+
+## Grouping and aggregating
+
+```sql
+SELECT user_id, count(*), sum(total), avg(total)
+FROM orders GROUP BY user_id HAVING count(*) > 2 ORDER BY user_id;
+```
+
+Also: `GROUPING SETS`, `ROLLUP`, `CUBE`, `FILTER (WHERE …)`, `ORDER BY` inside aggregates. See [Aggregates](/v0.1.0/sql/aggregates).
+
+## Joining
+
+```sql
+SELECT u.name, o.total FROM users u JOIN orders o ON o.user_id = u.id;
+```
+
+`INNER/LEFT/RIGHT/FULL/CROSS`, `USING(a,b)` (rewritten to `L.a=R.a AND …`), comma cross joins, lateral and table functions. See [Joins](/v0.1.0/sql/joins).
+
+## NULL in one paragraph
+
+`NULL = NULL` is `NULL`, not true. `WHERE` keeps only `true`. Aggregates skip NULLs (`COUNT(*)` excepted). `ORDER BY` defaults: `ASC → NULLS LAST`, `DESC → NULLS FIRST`. Full contract: [NULL semantics](/v0.1.0/sql/null-semantics).
+
+## Next
+
+[SELECT reference](/v0.1.0/sql/select) · [Operators](/v0.1.0/sql/operators) · [Cookbook](/v0.1.0/cookbook/overview)

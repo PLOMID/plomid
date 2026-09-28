@@ -1,0 +1,14 @@
+---
+title: Request lifecycle
+description: From TCP bytes to rows — startup, auth, simple and extended query flows.
+---
+
+# Request lifecycle
+
+1. **TCP + startup** (`handler.rs:165-225`): `SSLRequest (80877103/4) → N`, `CancelRequest → close`, else require protocol `196608` with `user/database` defaults.
+2. **Auth** (`session.rs`, `scram.rs`): `Cleartext` (R3), `Md5` (R5 salt=pid bytes), `Scram` (R10→R11→R12, salt=sha256(password)[..16], PBKDF2 4096/32), `disabled → R0`. Pure-Rust crypto.
+3. **Simple `Q`**: empty → `EmptyQuery`; `COPY … STDIN/STDOUT` → copy frames; `DEALLOCATE/DISCARD/UNLISTEN/LISTEN/NOTIFY/CREATE|DROP DATABASE/USE/SHOW DATABASES` via registry or stub; else `Executor::execute*` → `T/D/C/E/N/Z` (`T` rowdesc table/col 0, `D` datarow -1=NULL, text values only).
+4. **Extended `P/B/D/E/S`**: `Parse→1` (store query+types+generation), `Bind→2` (decode text/binary per OID), `Describe→t/T/n`, `Execute` (append `LIMIT max_rows`; batchable plain multi-`VALUES` INSERTs staged, flushed as `BEGIN;…;COMMIT` at Sync), `Sync→flush+Z`, errors → `E` + `InFailedTransaction` until `Sync`.
+5. **Execution**: `statement_type()` dispatch, `block_in_place` engine calls, `pg_catalog`/`information_schema` served from live in-memory catalog + session params (`server_version 17.0`, `search_path "$user",public`, …).
+
+Transport: `set_nodelay`, `BufReader/Writer`, `MAX_FRONTEND_MESSAGE_SIZE 64 MiB`, `max_connections=100000` graceful reject, `connection_id/query_id` tracing.

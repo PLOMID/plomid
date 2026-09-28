@@ -1,0 +1,41 @@
+---
+title: Create and use your first database
+description: Databases, schemas, search_path, and selecting a database.
+---
+
+# Create and use your first database
+
+**Status:** Supported. Source: `crates/network/src/server/registry.rs`, `crates/sql/src/parser/use_.rs`, `crates/executor/src/executor.rs:execute_show`.
+
+## Concepts
+
+- A **database** is an isolated storage root. Database `plomid` lives directly in the data dir; every other database lives in `<data_dir>/databases/<name>/` with its own engine + WAL.
+- A **schema** is a namespace inside a database (`public` by default). `search_path` controls unqualified name resolution.
+- Database names must match `[_A-Za-z][_A-Za-z0-9]*` (`safe_database_name`).
+
+## Steps
+
+```sql
+CREATE DATABASE shop;
+USE shop;                    -- switch session database
+CREATE SCHEMA analytics;
+SET search_path TO analytics, public;
+SHOW databases;              -- also: SHOW database | SHOW schemas | SHOW tables
+```
+
+Via the wire protocol, connect with `database=shop` in the startup message (`psql "postgresql://plomid:secret@localhost:5432/shop"`).
+
+## Behavior
+
+- `CREATE DATABASE` for `plomid` uses the shared engine; other names open an isolated `PlomidStorageEngine` rooted at their own path.
+- `USE <db>` switches the session's database context; unknown names error.
+- `SHOW tables` lists the current database's tables.
+
+## Constraints
+
+- `CREATE/DROP DATABASE`, `USE`, `SHOW DATABASES` are handled by the database registry layer, not the generic executor path.
+- No `RENAME DATABASE` in v0.1.0.
+
+## Next
+
+- [Create a table](/v0.1.0/build/create-table) · [Configuration](/v0.1.0/operations/configuration)

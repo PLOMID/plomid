@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="560" viewBox="0 0 1560 560" role="img" aria-labelledby="stT stD">
+  <title id="stT">PLOMID capability status strip</title>
+  <desc id="stD">Four bands: data models with SQL tables, JSON documents, time series and composite and domain types available today; SQL surface with parser, planner, executor, joins, common table expressions, window functions and prepared statements available today and vector, graph and distribution on the roadmap; storage and durability with write-ahead log, checkpoint recovery, indexes and CRC32C available; operations with CLI diagnostics, structured logs and packaged releases available, and TLS plus multi-node on the roadmap. Solid copper boxes mean available today; dashed hatched boxes mean roadmap.</desc>
+  <defs>
+    <pattern id="shatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+
+  <!-- graphite surface -->
+  <rect width="1560" height="560" fill="#14171b"/>
+
+  <!-- band separators -->
+  <g stroke="rgba(255,255,255,0.08)" stroke-width="1">
+    <line x1="0" y1="128" x2="1560" y2="128"/>
+    <line x1="0" y1="266" x2="1560" y2="266"/>
+    <line x1="0" y1="404" x2="1560" y2="404"/>
+  </g>
+
+  <!-- band labels -->
+  <g font-family="'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace" font-size="11" letter-spacing="2.5" fill="#a0a6ae">
+    <text x="24" y="46">DATA MODELS</text>
+    <text x="24" y="184">SQL SURFACE</text>
+    <text x="24" y="322">STORAGE &amp; DURABILITY</text>
+    <text x="24" y="460">OPERATIONS</text>
+  </g>
+
+  <!-- ============ band 1 · data models ============ -->
+  <g font-family="'Inter',-apple-system,'Segoe UI',system-ui,sans-serif">
+    <rect x="300" y="24" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="576" y="36" width="10" height="10" fill="#e2683c"/>
+    <text x="316" y="58" font-size="14" font-weight="600" fill="#f2f2ef">SQL tables</text>
+    <text x="316" y="80" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">relational rows · primary keys</text>
+    <text x="316" y="94" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="612" y="24" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="888" y="36" width="10" height="10" fill="#e2683c"/>
+    <text x="628" y="58" font-size="14" font-weight="600" fill="#f2f2ef">JSON documents</text>
+    <text x="628" y="80" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">SQL/JSON paths · operators</text>
+    <text x="628" y="94" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="924" y="24" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="1200" y="36" width="10" height="10" fill="#e2683c"/>
+    <text x="940" y="58" font-size="14" font-weight="600" fill="#f2f2ef">Time series</text>
+    <text x="940" y="80" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">event-ordered records · scans</text>
+    <text x="940" y="94" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="1236" y="24" width="300" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="1512" y="36" width="10" height="10" fill="#e2683c"/>
+    <text x="1252" y="58" font-size="14" font-weight="600" fill="#f2f2ef">Composite · domain</text>
+    <text x="1252" y="80" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">enums · domains · JSON_TABLE</text>
+    <text x="1252" y="94" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+  </g>
+
+  <!-- ============ band 2 · sql surface ============ -->
+  <g font-family="'Inter',-apple-system,'Segoe UI',system-ui,sans-serif">
+    <rect x="300" y="152" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="576" y="164" width="10" height="10" fill="#e2683c"/>
+    <text x="316" y="186" font-size="14" font-weight="600" fill="#f2f2ef">Parser · Planner · Executor</text>
+    <text x="316" y="208" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">one path for every statement</text>
+    <text x="316" y="222" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="612" y="152" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="888" y="164" width="10" height="10" fill="#e2683c"/>
+    <text x="628" y="186" font-size="14" font-weight="600" fill="#f2f2ef">Joins · CTEs · windows</text>
+    <text x="628" y="208" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">incl. lateral · recursive · frames</text>
+    <text x="628" y="222" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="924" y="152" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="1200" y="164" width="10" height="10" fill="#e2683c"/>
+    <text x="940" y="186" font-size="14" font-weight="600" fill="#f2f2ef">Prepared statements</text>
+    <text x="940" y="208" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">extended query · parse/bind</text>
+    <text x="940" y="222" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="1236" y="152" width="300" height="80" rx="2" fill="url(#shatch)" stroke="#6b7178" stroke-width="1" stroke-dasharray="4 3"/>
+    <rect x="1512" y="164" width="10" height="10" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>
+    <text x="1252" y="186" font-size="14" font-weight="600" fill="#a0a6ae">Vector · Graph · Dist.</text>
+    <text x="1252" y="208" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#6b7178">ANN · traversal · multi-node</text>
+    <text x="1252" y="222" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#6b7178">ROADMAP</text>
+  </g>
+
+  <!-- ============ band 3 · storage & durability ============ -->
+  <g font-family="'Inter',-apple-system,'Segoe UI',system-ui,sans-serif">
+    <rect x="300" y="290" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="576" y="302" width="10" height="10" fill="#e2683c"/>
+    <text x="316" y="324" font-size="14" font-weight="600" fill="#f2f2ef">Write-ahead log</text>
+    <text x="316" y="346" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">segmented · fsync · replay</text>
+    <text x="316" y="360" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="612" y="290" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="888" y="302" width="10" height="10" fill="#e2683c"/>
+    <text x="628" y="324" font-size="14" font-weight="600" fill="#f2f2ef">Checkpoint recovery</text>
+    <text x="628" y="346" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">crash-safe restarts</text>
+    <text x="628" y="360" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="924" y="290" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="1200" y="302" width="10" height="10" fill="#e2683c"/>
+    <text x="940" y="324" font-size="14" font-weight="600" fill="#f2f2ef">Indexes</text>
+    <text x="940" y="346" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">ART in-memory · B+Tree persistent</text>
+    <text x="940" y="360" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="1236" y="290" width="300" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="1512" y="302" width="10" height="10" fill="#e2683c"/>
+    <text x="1252" y="324" font-size="14" font-weight="600" fill="#f2f2ef">CRC32C integrity</text>
+    <text x="1252" y="346" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">hardware accelerated</text>
+    <text x="1252" y="360" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+  </g>
+
+  <!-- ============ band 4 · operations ============ -->
+  <g font-family="'Inter',-apple-system,'Segoe UI',system-ui,sans-serif">
+    <rect x="300" y="428" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="576" y="440" width="10" height="10" fill="#e2683c"/>
+    <text x="316" y="462" font-size="14" font-weight="600" fill="#f2f2ef">CLI &amp; diagnostics</text>
+    <text x="316" y="484" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">readiness · health · benchmark</text>
+    <text x="316" y="498" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="612" y="428" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="888" y="440" width="10" height="10" fill="#e2683c"/>
+    <text x="628" y="462" font-size="14" font-weight="600" fill="#f2f2ef">Structured logs</text>
+    <text x="628" y="484" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">connection_id · query_id · durations</text>
+    <text x="628" y="498" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="924" y="428" width="288" height="80" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <rect x="1200" y="440" width="10" height="10" fill="#e2683c"/>
+    <text x="940" y="462" font-size="14" font-weight="600" fill="#f2f2ef">Docker · packages</text>
+    <text x="940" y="484" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#a0a6ae">dmg · deb · rpm · tar.gz</text>
+    <text x="940" y="498" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#e2683c">AVAILABLE TODAY</text>
+
+    <rect x="1236" y="428" width="300" height="80" rx="2" fill="url(#shatch)" stroke="#6b7178" stroke-width="1" stroke-dasharray="4 3"/>
+    <rect x="1512" y="440" width="10" height="10" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>
+    <text x="1252" y="462" font-size="14" font-weight="600" fill="#a0a6ae">TLS · multi-node ops</text>
+    <text x="1252" y="484" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#6b7178">replication · backups</text>
+    <text x="1252" y="498" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#6b7178">ROADMAP</text>
+  </g>
+
+  <!-- legend -->
+  <g font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="10">
+    <rect x="24" y="514" width="22" height="14" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <text x="54" y="525" fill="#a0a6ae">available today</text>
+    <rect x="200" y="514" width="22" height="14" rx="2" fill="url(#shatch)" stroke="#6b7178" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="230" y="525" fill="#a0a6ae">roadmap</text>
+  </g>
+
+  <!-- note -->
+  <text x="1536" y="525" text-anchor="end" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="10" fill="#6b7178">Solid = shipped · Dashed = not yet</text>
+</svg>

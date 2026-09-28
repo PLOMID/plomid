@@ -1,0 +1,10 @@
+# Default ownership for the PLOMID repository.
+* @plomid
+
+
+# Kernel crates require the engine owners' review.
+/crates/ @plomid
+@sainathsapa
+
+# CI and repository automation require engineering-owner review.
+/.github/ @plomid

@@ -1,0 +1,71 @@
+---
+title: Complex multi-feature queries
+description: Progressive examples combining relational, JSON, time, aggregates, and transactions.
+---
+
+# Complex multi-feature queries
+
+Shared schema from [Quickstart](/v0.1.0/getting-started/quickstart).
+
+```sql
+-- 1. filtered
+SELECT * FROM orders WHERE total > 50;
+-- 2. aggregated
+SELECT user_id, count(*), sum(total) FROM orders GROUP BY user_id;
+-- 3. join
+SELECT u.name, o.id, o.total FROM users u JOIN orders o ON o.user_id = u.id;
+-- 4. JSON + relational
+SELECT u.name, e.payload->>'page' AS page
+FROM users u JOIN events e ON (e.payload->>'user_id')::bigint = u.id
+WHERE e.payload @> '{"ok": true}';
+-- 5. time window + relational
+SELECT date_trunc('hour', e.ts) h, count(*) FROM events e
+WHERE e.ts >= now() - INTERVAL '1 day' GROUP BY 1 ORDER BY 1;
+-- 6. index-assisted (user_id + ts indexed)
+SELECT u.name, count(*) FROM users u JOIN orders o ON o.user_id = u.id
+WHERE o.placed_at >= now() - INTERVAL '30 days' GROUP BY u.name ORDER BY count(*) DESC LIMIT 10;
+-- 7. everything: CTE + JSON + time + aggregate + window
+WITH recent AS (
+  SELECT (payload->>'user_id')::bigint AS uid, date_trunc('day', ts) d, count(*) c
+  FROM events WHERE ts >= now() - INTERVAL '7 days' AND payload @> '{"ok": true}'
+  GROUP BY 1, 2
+)
+SELECT u.name, r.d, r.c, sum(r.c) OVER (PARTITION BY u.id ORDER BY r.d) AS running
+FROM recent r JOIN users u ON u.id = r.uid ORDER BY u.name, r.d;
+```
+
+Line-by-line: (1–2) single-table scan+aggregate; (3) nested/hash join; (4) JSON extraction + containment; (5) time pruning; (6) indexed join + sort+limit; (7) CTE materialization + grouped JSON/time + window running total.
+
+## More production shapes (from the qualification suite)
+
+```sql
+-- recursive tree walk (categories with depth counter)
+WITH RECURSIVE category_tree AS (
+  SELECT category_id, parent_category_id, category_name, 0 AS depth FROM categories
+  WHERE parent_category_id IS NULL
+  UNION ALL
+  SELECT c.category_id, c.parent_category_id, c.category_name, ct.depth + 1
+  FROM categories c JOIN category_tree ct ON c.parent_category_id = ct.category_id)
+SELECT * FROM category_tree ORDER BY depth, category_id;
+
+-- grouping sets with NULLS FIRST ordering on the generated NULLs
+SELECT c.country, o.order_status, COUNT(*), SUM(o.order_total)
+FROM orders o JOIN organizations c ON c.organization_id = o.organization_id
+GROUP BY GROUPING SETS ((c.country), (o.order_status), ())
+ORDER BY c.country NULLS FIRST, o.order_status NULLS FIRST;
+
+-- quantified + 3-level nesting
+SELECT order_id FROM orders WHERE order_total > ALL
+  (SELECT order_total FROM orders WHERE order_status = 'cancelled') ORDER BY order_total DESC LIMIT 20;
+SELECT organization_id FROM organizations WHERE organization_id IN
+  (SELECT organization_id FROM orders WHERE order_total >
+    (SELECT AVG(order_total) FROM orders WHERE order_status <> 'cancelled'));
+
+-- expression GROUP BY routes to the general engine
+SELECT DATE_TRUNC('day', created_at) AS day, currency, COUNT(*)
+FROM orders GROUP BY DATE_TRUNC('day', created_at), currency ORDER BY day, currency;
+```
+
+Full walkthrough: [Production e-commerce](/v0.1.0/cookbook/ecommerce).
+
+Wrap (7) in `BEGIN…COMMIT` when pairing with writes; keep `UPDATE…FROM` out of explicit transactions.

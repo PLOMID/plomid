@@ -1,0 +1,41 @@
+[package]
+name = "plomid-executor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Query execution foundations for PLOMID."
+
+[dependencies]
+plomid-core = { workspace = true }
+plomid-sql = { workspace = true }
+plomid-json = { workspace = true }
+plomid-storage = { workspace = true }
+plomid-txn = { workspace = true }
+plomid-types = { workspace = true }
+plomid-index = { workspace = true }
+plomid-columnar = { workspace = true }
+tracing = "0.1"
+regex = "1.11"
+
+[lib]
+path = "src/lib.rs"
+
+[dev-dependencies]
+plomid-wal = { workspace = true }
+tracing-subscriber = "0.3"
+criterion = "0.5"
+
+[[bench]]
+name = "time_series_query"
+harness = false
+
+[[bench]]
+name = "relational_query"
+harness = false
+
+[lints]
+workspace = true

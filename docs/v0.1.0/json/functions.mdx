@@ -1,0 +1,105 @@
+---
+title: JSON functions — complete catalog
+description: Every JSON/JSONB function in v0.1.0 with signature and copy-paste example.
+---
+
+# JSON functions — complete catalog
+
+Dispatch: `scalar_function_value_extended` → `plomid_types::builtin_functions()` → executor arms. `json` returns text-model; `jsonb` canonical bytes.
+
+## Constructors
+
+```sql
+SELECT json_build_object('a', 1, 'b', 'x');       -- {"a":1,"b":"x"}
+SELECT jsonb_build_object('a', 1);
+SELECT json_build_array(1, 'x', true);
+SELECT jsonb_build_array(1, 2);
+SELECT JSON '{"a": 1}';                            -- JSON literal
+SELECT json_scalar(42), json_scalar('hi');         -- scalar to JSON
+SELECT json_object('{"a":1}'), jsonb_object('{"a":1}');
+SELECT json_array('[1,2]'), jsonb_array('[1,2]');
+SELECT JSON_OBJECT('k1': 1, 'k2': 2);
+SELECT JSON_OBJECT(KEY 'a' VALUE 1, KEY 'b' VALUE 2);
+SELECT JSON_ARRAY(1, 'x', TRUE);
+```
+
+## Accessors
+
+```sql
+SELECT json_extract_path(payload, 'user', 'name') FROM events;
+SELECT jsonb_extract_path(payload, 'user', 'name') FROM events;
+SELECT json_extract_path_text(payload, 'user', 'name') FROM events;
+SELECT jsonb_extract_path_text(payload, 'user', 'name') FROM events;
+SELECT json_path(payload, '{user,name}') FROM events;       -- #> form
+SELECT json_path_text(payload, '{user,name}') FROM events;  -- #>> form
+SELECT jsonb_typeof(payload), json_typeof(payload) FROM events;  -- object|array|string|number|boolean|null
+SELECT jsonb_pretty(payload), json_pretty(payload) FROM events;
+SELECT jsonb_array_length(payload->'tags'), json_array_length(payload->'tags') FROM events;
+```
+
+## Unnesting (also FROM-table SRFs)
+
+```sql
+SELECT json_array_elements(payload->'tags') FROM events;
+SELECT jsonb_array_elements(payload->'tags') FROM events;
+SELECT json_array_elements_text(payload->'tags') FROM events;
+SELECT jsonb_array_elements_text(payload->'tags') FROM events;
+SELECT json_object_keys(payload->'user') FROM events;
+SELECT jsonb_object_keys(payload->'user') FROM events;
+SELECT json_each(payload->'user'), jsonb_each(payload->'user') FROM events;
+SELECT json_each_text(payload->'user'), jsonb_each_text(payload->'user') FROM events;
+SELECT * FROM jsonb_each_text('{"a":"1"}') AS e(k, v);
+SELECT * FROM unnest(ARRAY['a','b']) AS u(x);
+```
+
+## Predicates
+
+```sql
+SELECT json_contains(payload, '{"ok": true}') FROM events;   -- @>
+SELECT json_contained_by(payload, '{"a":1,"b":2}') FROM events;
+SELECT json_exists(payload, 'user'), json_exists_any(payload, 'a,b'), json_exists_all(payload, 'a,b') FROM events;
+SELECT jsonb_path_exists(payload, '$.user.name') FROM events;
+SELECT jsonb_path_exists_tz(payload, '$.ts ? (@ > $t)', '{"t": "2026-01-01"}') FROM events;
+SELECT jsonb_path_match(payload, '$.n ? (@ > 2)') FROM events;
+SELECT jsonb_path_match_tz(payload, '$.ts ? (@ > $t)', '{"t":"2026-01-01"}') FROM events;
+```
+
+## Mutation
+
+```sql
+SELECT jsonb_set(payload, '{user,name}', '"ADA"') FROM events;
+SELECT jsonb_set_lax(payload, '{a}', 'null', true, 'use_json_null') FROM events;
+SELECT jsonb_insert(payload, '{tags,0}', '"new"') FROM events;
+SELECT jsonb_delete_path(payload, '{user,temp}') FROM events;  -- #- form
+SELECT json_strip_nulls(payload), jsonb_strip_nulls(payload) FROM events;
+```
+
+## SQL/JSON query-value
+
+```sql
+SELECT JSON_VALUE(payload, '$.user.name') FROM events;
+SELECT JSON_QUERY(payload, '$.user') FROM events;
+SELECT JSON_SERIALIZE(payload) FROM events;
+SELECT json_query(payload, '$.user'), json_value(payload, '$.user.name'), json_serialize(payload) FROM events;
+```
+
+## Record population
+
+```sql
+SELECT json_populate_record(NULL::users, payload->'user') FROM events;
+SELECT json_populate_recordset(NULL::users, payload->'items') FROM events;
+SELECT row_to_json(ROW(1, 'ada')) FROM users;
+SELECT to_json(id), to_jsonb(payload) FROM events;
+```
+
+## Aggregates
+
+```sql
+SELECT json_agg(payload ORDER BY id), jsonb_agg(payload ORDER BY id) FROM events;
+SELECT json_object_agg(name, id), jsonb_object_agg(name, id) FROM users;
+SELECT JSON_ARRAYAGG(x ORDER BY x), JSON_OBJECTAGG(KEY k VALUE v) FROM t;
+SELECT jsonb_path_query_array(payload, '$.tags[*]') FROM events;
+SELECT jsonb_path_query_first(payload, '$.tags[0]') FROM events;
+```
+
+**Related:** [Operators](/v0.1.0/json/operators) · [JSON_TABLE](/v0.1.0/json/table) · [NULL](/v0.1.0/sql/null-semantics)

@@ -1,0 +1,33 @@
+---
+title: SQL compatibility and limitations
+description: Implemented, partial, unsupported, and different-behavior — so PG habits don't mislead.
+---
+
+# SQL compatibility and limitations
+
+Do not assume PostgreSQL (or any other database) behavior from similar syntax. This page is the implementation-derived record.
+
+## Implemented
+
+DDL/DML above; joins incl. lateral; subqueries incl. correlated `EXISTS`; `WITH [RECURSIVE]`; set ops; window functions with `PARTITION BY/ORDER BY/ROWS|RANGE|GROUPS` frames; `GROUPING SETS/ROLLUP/CUBE`; `DISTINCT [ON]`; `FILTER`; JSON operators/constructors/`JSON_TABLE`; temporal literals/arithmetic/`EXTRACT`; `ON CONFLICT`; `RETURNING`; `EXPLAIN [ANALYZE]`; `COPY … STDIN/STDOUT` (wire); `SET/SHOW/DESCRIBE/USE`; sequences + `nextval/currval`; `ENUM/DOMAIN/composite` types; `pg_catalog`/`information_schema` live rows.
+
+## Partial
+
+- `ILIKE` parses; case-folding ignored in single-table path (acts as `LIKE`).
+- `FOR UPDATE` accepted, ignored.
+- `AND/OR` use is-true checks: `NULL AND TRUE → false` (differs from strict 3VL).
+- `CREATE FUNCTION/PROCEDURE/TRIGGER/EXTENSION/MATERIALIZED VIEW` parse to stubs without execution.
+- `VACUUM/ANALYZE/REINDEX/LOCK/CLUSTER/REFRESH/LISTEN/NOTIFY` parse; mostly no engine effect.
+- `UPDATE…FROM` / `COPY` unsupported inside explicit transactions.
+- `LIMIT/OFFSET` only integer literal or cast.
+
+## Unsupported / not available in v0.1.0
+
+Foreign-key enforcement, `RENAME DATABASE`, file `COPY`, cursors, stored-procedure execution, `plpgsql` beyond `DO/PERFORM/RAISE` subset, vector/graph/blob types, multi-region/distributed, continuous aggregates/retention/downsampling, TLS transport (flags exist; handshake declined with `tls_mode_not_yet_implemented`), binary wire values (text only).
+
+## Different behavior worth knowing
+
+- `COUNT(DISTINCT)` dedups by `to_sql_text` (`1` ≡ `1.0`).
+- `AVG(int)` returns normalized `Numeric` (PG typing preserved deliberately).
+- Server default password is `plomid`; CLI default password is `secret`; `start.sh` default is `secret`. Always set explicitly.
+- No compatibility percentage is claimed. Wire + OID + catalog similarity does not imply semantic compatibility.

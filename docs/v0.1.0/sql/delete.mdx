@@ -1,0 +1,22 @@
+---
+title: DELETE and TRUNCATE
+description: DELETE with USING, RETURNING, and TRUNCATE behavior.
+---
+
+# DELETE and TRUNCATE
+
+```text
+DELETE FROM table [[AS] alias] [USING relation] [WHERE expr] [RETURNING targets]
+TRUNCATE [TABLE] t [, …] [opts]
+```
+
+```sql
+DELETE FROM orders WHERE placed_at < DATE '2024-01-01' RETURNING id;
+DELETE FROM orders USING users WHERE orders.user_id = users.id AND users.name = 'tmp';
+TRUNCATE orders;
+TRUNCATE a, b;
+```
+
+`USING` is materialized like `UPDATE…FROM` (`materialize_using_in_txn` supports plain tables in-txn). `TRUNCATE` tails/options are consumed at parse; execution removes rows as a write accounted after commit.
+
+**Behavior:** returns `Deleted(n)` or rows with `RETURNING`. Empty predicate match → `Deleted(0)`, not an error.

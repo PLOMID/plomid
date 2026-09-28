@@ -1,0 +1,22 @@
+---
+title: Columnar segments and pruning filters
+description: Columnar format, encodings, zone maps, BRIN, XOR and Roaring filters.
+---
+
+# Columnar segments and pruning filters
+
+**Label:** Internal with developer-visible effects (pruning speeds time-range scans).
+
+## Columnar (`crates/columnar`)
+
+64 B `PLCS v1` header; 80 B column meta `{col_id,type: Null|Integer|Bytes|String,compression,stats,offsets}`; 56 B `PLCC v1` chunk header + `[u32 len][value]` payloads (NULL = zero-len, bitmap authoritative). Header→body→per-chunk CRCs; absolute offsets so pruning never touches payloads.
+
+Encodings: `Raw | Rle | DeltaBitpack (i64 LE, targets integer/time-series) | Dictionary (≤64 K)`, `Auto` keeps smallest. Chunking ~16 MiB; `Zstd` feature-gated (default `None`). Pipeline: materialize (hot rows/snapshot → `MaterializedColumn`) → flush (encode+compress+stats+BRIN) → `ColumnarStore` via `GenerationManager` → lazy `SegmentReader::decode`/`read_chunk`.
+
+Statistics conservative (unavailable on unordered/all-NULL/mixed). Compaction + vector helpers for `COUNT/SUM/AVG/MIN/MAX` live here — not pgvector.
+
+## Pruning pipeline
+
+`ZoneMap → BRIN → XOR → Roaring → exact`. `PrunePredicate` lowered from SQL (`lower_sql_expression`); rule: **PRUNE only if metadata proves no match; missing/uncertain/malformed → KEEP**. `BrinIndex` tiling (`DEFAULT_BRIN_ROWS_PER_RANGE`); trailer `PLxx + CRC` after chunk table.
+
+`XorFilter` 3-hash 8-bit (~0.83% FPR), never authoritative (true → exact check). `RoaringBitmap` u32, 64 K containers (Array ≤4095 / Bitmap / Run), deterministic `PLRB v1 + CRC`. Filters live in `shared/filters/`, rebuilt at flush; no filter WAL/MVCC.

@@ -1,0 +1,40 @@
+---
+title: Run transactions
+description: BEGIN, COMMIT, ROLLBACK, visibility, conflicts, and failure cases.
+---
+
+# Run transactions
+
+## Minimal
+
+```sql
+BEGIN;
+INSERT INTO users VALUES (9, 'test');
+UPDATE orders SET total = total + 1 WHERE id = 101;
+COMMIT;
+-- or ROLLBACK;
+```
+
+Options parse: `BEGIN [TRANSACTION|WORK] [ISOLATION LEVEL … | READ ONLY | …]`, `START TRANSACTION …`, `COMMIT [opts]`, `ROLLBACK [TO [SAVEPOINT] name]`.
+
+## What actually happens
+
+1. `BEGIN` buffers statements client-side in the executor (`pending`).
+2. `COMMIT` runs them as one storage transaction: single WAL batch (Begin + Data + Commit+ts), one fsync via group durability, then pages + MVCC versions published. WAL fsync always precedes page updates.
+3. `ROLLBACK` appends `Abort` and discards buffers.
+
+Source: `crates/executor/src/transaction.rs`, `crates/txn/src/transaction.rs`, `crates/txn/src/engine_impl.rs`.
+
+## Rules that bite
+
+- Unclosed `BEGIN` without `COMMIT`/`ROLLBACK` → `Conflict: BEGIN without COMMIT or ROLLBACK`.
+- Lone `COMMIT`/`ROLLBACK` without `BEGIN` executes as a no-op group (`Begin+stmt+Rollback`).
+- `COPY` and `UPDATE…FROM` inside an explicit transaction → `Unsupported`. Do those in autocommit.
+- `CREATE TABLE`/`CREATE VIEW` are allowed in-transaction; most other DDL is autocommit.
+- First lane wins on row/unique conflicts (`Conflict`); snapshot refreshes after lane acquisition (read-committed style re-evaluation).
+
+## Visibility in one paragraph
+
+Own writes always visible. Others' uncommitted writes invisible. Committed versions visible when creator not active in your snapshot and `commit_ts <= watermark`. See [MVCC](/v0.1.0/transactions/mvcc) and [Behavior contracts](/v0.1.0/transactions/behavior-contracts).
+
+**Next:** [MVCC](/v0.1.0/transactions/mvcc) · [Troubleshoot transactions](/v0.1.0/troubleshooting/overview)

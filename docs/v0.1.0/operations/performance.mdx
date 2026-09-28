@@ -1,0 +1,18 @@
+---
+title: Performance guide
+description: How to think about PLOMID performance — no invented numbers.
+---
+
+# Performance guide
+
+No universal benchmark numbers are claimed. Repository benches and perf probes are development measurements under their own conditions — cite conditions when quoting them.
+
+## Levers you control
+
+1. **Index the predicate**: equality/range/order/time-window columns first; expression indexes for hot JSON paths.
+2. **Shape the query**: selective `WHERE` before joins; `LIMIT` early; prefer keyset over large `OFFSET`; `EXPLAIN ANALYZE` actuals over estimates.
+3. **Batch writes**: multi-row `VALUES`, `INSERT…SELECT`, short transactions; group commit already coalesces concurrent commits.
+4. **Mind checkpoints**: 64 MiB / 16 segments / 15 min defaults bound replay; raising thresholds defers checkpoint cost but lengthens recovery.
+5. **Measure**: `./target/debug/plomid benchmark run --iterations N --json` writes `<data_dir>/benchmarks/<run>.json` (avg/p50/p95/p99/throughput for `SELECT 1`).
+
+`./target/debug/plomid metrics` reports probe latency; server counters are `unavailable` in v0.1.0 (no metrics endpoint).

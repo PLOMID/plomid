@@ -1,0 +1,29 @@
+---
+title: Inspect a query plan
+description: Use EXPLAIN and EXPLAIN ANALYZE to see how PLOMID will execute a query.
+---
+
+# Inspect a query plan
+
+```sql
+EXPLAIN SELECT * FROM users WHERE id = 5;
+EXPLAIN (ANALYZE, FORMAT JSON) SELECT * FROM orders WHERE user_id = 5;
+EXPLAIN ANALYZE SELECT u.name, count(*) FROM users u JOIN orders o ON o.user_id = u.id GROUP BY u.name;
+```
+
+## Output shapes (implemented in `crates/executor/src/query/explain.rs`)
+
+- `Seq Scan on T (cost=1.01..1.01 rows=N width=W) [(filter: WHERE)]`
+- Joins: `Seq Scan on A JOIN B`; `UNION → Append [ALL]`; `INTERSECT → Hash Intersect [ALL]`; `EXCEPT → Hash Except [ALL]`; `WITH → CTE Scan (N CTEs)`; writes: `Insert|Update|Delete on T`.
+- `EXPLAIN ANALYZE` executes the inner statement and appends `Actual Rows: N, Execution Time: 0.00ms`.
+- `FORMAT JSON` returns one JSON doc with `Plan{Node Type, Relation, Startup/Total Cost, Plan Rows/Width}` plus actuals when analyze.
+
+## What to look for
+
+- Relation + filter: is the predicate where you expect?
+- `Actual Rows` vs estimated `rows`: large gaps mean the shape assumption is off.
+- v0.1.0 has no cost-based planner (`crates/optimizer` is a stub) — `EXPLAIN` describes scan/join/set shapes, not an index-choice trace. Measure with `EXPLAIN ANALYZE` and [Performance](/v0.1.0/operations/performance).
+
+## Constraints
+
+`EXPLAIN` accepts `(ANALYZE, FORMAT json|text, COSTS|BUFFERS|…)` options; unknown options are tolerated in the option list but only analyze/format change output.

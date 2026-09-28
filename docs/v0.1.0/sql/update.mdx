@@ -1,0 +1,27 @@
+---
+title: UPDATE
+description: SET forms, FROM joins, JSON targets, WHERE, RETURNING.
+---
+
+# UPDATE
+
+```text
+UPDATE table [[AS] alias] SET col = expr [, …]
+[FROM relation] [WHERE expr] [RETURNING targets]
+```
+
+```sql
+UPDATE users SET name = 'ADA' WHERE id = 1;
+UPDATE users AS u SET name = upper(name) FROM orders o WHERE o.user_id = u.id;
+UPDATE inventory i SET reserved = x.reserved_units   -- implicit alias (no AS), derived-table source
+FROM (SELECT product_id, SUM(quantity) AS reserved_units FROM order_items GROUP BY product_id) x
+WHERE i.product_id = x.product_id;
+UPDATE events SET payload['team'] = '"engine"' WHERE id = 7;
+UPDATE customers SET credit_limit = credit_limit + 100 WHERE id = 100 RETURNING id, credit_limit;
+UPDATE users SET name = 'x' WHERE id = 1 RETURNING *;
+UPDATE users SET name = 'x' WHERE id = 1 RETURNING users.id, users.name, id + 1;
+```
+
+SET targets: plain column, `VALUE`, or JSON/array subscript (`payload['k'][1]` → `ArrayIndex`). `FROM` is materialized first (`update_from::materialize_from`).
+
+**Constraints:** `UPDATE…FROM` inside an explicit `BEGIN…COMMIT` → `Unsupported` (use autocommit). Strict-DML validation (`validate_dml_strict`) and `preview_dml_count` apply to staged writes.

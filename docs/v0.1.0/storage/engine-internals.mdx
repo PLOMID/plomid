@@ -1,0 +1,26 @@
+---
+title: Storage engine internals
+description: Pages, blocks, packs, B-tree, buffer pool, checksums, catalog — implementation details.
+---
+
+# Storage engine internals
+
+**Label:** Internal. Do not depend on these layouts from applications; they are documented for contributors.
+
+## Physical
+
+`physical.rs`: `PageHeader{magic,version,type,page_id,generation,lsn,payload_len,flags,checksum}`, `BlockMetadata`, `PackHeader/Footer`, `PhysicalLocation{device,pack,block,page,offset}` with alignment validation. Managers: `page_manager (PLPM)`, `block_manager (PLBM, 16-page alloc)`, `pack_manager (PLPK/PLPD/PLPF + BlockDirectoryEntry)`, `device/* (PLDV/PLEX, extents, capacity reserve)`.
+
+## Row codec and B-tree
+
+`row.rs`: `PR magic, v1, flags, field_count u16, null_bitmap, total_length u32`; fields `Integer(tag1+i64LE) | Bytes | String`, NULL via bitmap; must fit `PAGE_DATA_SIZE`. `btree.rs`: page0 `PLRT` root pointer; nodes `PLBT LEAF/INTERNAL`; byte-midpoint split; no delete rebalance; in-place leaf upsert; `get/range/insert/replace_if_present/delete/sync`.
+
+`StorageManager`: each segment an independent on-disk B-tree page file; newest `Active`, older `Sealed`; `get` newest-first; `apply_batch` routes via `key_segments` + sealed negative filter; `replace_if_present` in sealed before active upsert; `rotate()` at `is_full`. Segment wraps B-tree + XOR/roaring `may_contain` built lazily at seal. Placement via `DeviceAllocator::select_device` + `round_up_to_extent`.
+
+## Buffer pool and checksums
+
+`buffer_pool.rs`: single-threaded LRU, `capacity` frames, `&mut`-only; dirty write-through on evict; `pinned_structural` pages never evicted (leave only via `sync`); miss path verifies CRC + id. Checksums: CRC32C Castagnoli (`crates/crc32c`, KAT `crc("123456789")==0xe3069283`); page header CRC + whole-page trailer CRC; same primitive for pack/block/catalog (`PLCT`)/generation (`PLGN`)/checkpoint (`PLCK`)/WAL (`PLW2`)/columnar/roaring (`PLRB`)/XOR (`PLXF`)/segment (`PLWS`). Corruption → `ErrorKind::Corruption`.
+
+## Catalog
+
+`catalog.rs`: immutable `CatalogState{version,generation,storage_gen,checkpoint_lsn,publication,records sorted by ObjectId}`; `ObjectRecord{object_id, table_identity, schema{columns{column_id,type_code}}, current_generation, retained_generations, references{PhysicalReference}, publication: Staged|Published|Retired}`; 72 B `PLCT v2` header, atomic publish, discovery ignores non-canonical names.

@@ -1,0 +1,21 @@
+---
+title: Ordering, grouping, pagination
+description: ORDER BY, GROUP BY variants, DISTINCT, LIMIT/OFFSET with exact rules.
+---
+
+# Ordering, grouping, pagination
+
+```sql
+SELECT * FROM orders ORDER BY total DESC NULLS LAST, id ASC;
+SELECT DISTINCT city FROM users;
+SELECT DISTINCT ON (city) city, name FROM users ORDER BY city, id;
+SELECT user_id, count(*) FROM orders GROUP BY user_id;
+SELECT * FROM orders LIMIT 20 OFFSET 40;
+SELECT * FROM orders ORDER BY placed_at DESC LIMIT '10'::int;
+```
+
+- `ORDER BY expr [ASC|DESC] [NULLS FIRST|LAST]`; default `ASC→NULLS LAST`, `DESC→NULLS FIRST` (also inside windows/aggregates).
+- `GROUP BY` / `GROUPING SETS` / `ROLLUP` / `CUBE` (normalized to sets).
+- `DISTINCT`, `DISTINCT ON (…)` supported.
+- `LIMIT`/`OFFSET`: only integer literal or cast; anything else is a parse error.
+- `FOR UPDATE`: accepted, ignored.

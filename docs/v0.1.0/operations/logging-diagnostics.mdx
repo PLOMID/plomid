@@ -1,0 +1,31 @@
+---
+title: Logging, health, and diagnostics
+description: Log levels, trace fields, startup banner, and diagnostic commands.
+---
+
+# Logging, health, diagnostics
+
+## Levels
+
+Default `info`. `PLOMID_LOG_LEVEL=debug ./start.sh` or `RUST_LOG=server=debug,server::protocol=trace ./start.sh`. Use `info` operations, `debug` lifecycle, `trace` protocol/parser. `RUST_LOG=plomid::perf=debug` for per-op timers.
+
+## Trace fields
+
+Every connection/query log: `connection_id query_id statement_type sql_len elapsed_ms` (+ error context). Values/passwords excluded.
+
+## Banner
+
+`PLOMID ENTERPRISE v<version>`, PG wire v3, OS/ARCH, boot checklist, listen/port/data dir/role/auth (`tls off|enabled(scram-sha-256|md5|password|disabled)`)/tls.
+
+## Commands
+
+```sh
+./target/debug/plomid db readiness --port 5432
+./target/debug/plomid db health --port 5432 --json
+./target/debug/plomid db diagnostics --port 5432
+./target/debug/plomid metrics --port 5432
+```
+
+`live_connections` gauge + `drain(5 s)` on shutdown; `shutdown_checkpoint` logged; maintenance worker shutdown reports `{submitted, completed, inline_fallbacks}`.
+
+When stuck: [Troubleshooting](/v0.1.0/troubleshooting/overview).

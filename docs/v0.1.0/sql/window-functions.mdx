@@ -1,0 +1,76 @@
+---
+title: Window functions
+description: All 16 OVER-clause functions — ranking, value, and aggregate windows with frames.
+---
+
+# Window functions
+
+<Check>**Supported.** `crates/executor/src/window.rs`. Gate list: `row_number rank dense_rank percent_rank cume_dist ntile lag lead first_value last_value nth_value sum avg count min max`.</Check>
+
+## Syntax
+
+```text
+func(args) OVER (
+  [PARTITION BY expr, ...]
+  [ORDER BY expr [ASC|DESC] [NULLS FIRST|LAST], ...]
+  [ROWS|RANGE|GROUPS { BETWEEN b AND b | b }]
+)
+b = UNBOUNDED PRECEDING | n PRECEDING | CURRENT ROW | n FOLLOWING | UNBOUNDED FOLLOWING
+```
+
+Offset `n` is a full expression. Invalid `start > end` rejected. Peer groups never split for ranking/default frames.
+
+## Ranking
+
+```sql
+SELECT name, total,
+  row_number() OVER (ORDER BY total DESC),
+  rank() OVER (ORDER BY total DESC),
+  dense_rank() OVER (ORDER BY total DESC),
+  percent_rank() OVER (ORDER BY total DESC),
+  cume_dist() OVER (ORDER BY total DESC),
+  ntile(4) OVER (ORDER BY total DESC)
+FROM orders;
+```
+
+`ntile(n)` with `n<=0` yields NULLs; peers share rank; `percent_rank = (rank-1)/(rows-1)`.
+
+## Value (lag/lead/first/last/nth)
+
+```sql
+SELECT id, total,
+  lag(total) OVER (ORDER BY id),
+  lag(total, 2, 0) OVER (ORDER BY id),
+  lead(total) OVER (ORDER BY id),
+  first_value(total) OVER (PARTITION BY user_id ORDER BY placed_at),
+  last_value(total) OVER (PARTITION BY user_id ORDER BY placed_at
+    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
+  nth_value(total, 2) OVER (PARTITION BY user_id ORDER BY placed_at
+    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+FROM orders;
+```
+
+Defaults: `lag/lead` missing offset → 1, missing default → NULL. `first/last/nth` require the frame shown for full-partition semantics.
+
+## Aggregate windows
+
+```sql
+SELECT id, total,
+  sum(total) OVER (PARTITION BY user_id ORDER BY placed_at),
+  avg(total) OVER (PARTITION BY user_id ORDER BY placed_at),
+  count(*) OVER (PARTITION BY user_id),
+  min(total) OVER (ORDER BY placed_at),
+  max(total) OVER (ORDER BY placed_at)
+FROM orders;
+```
+
+## Partitioned + framed recipe
+
+```sql
+SELECT user_id, placed_at, total,
+  sum(total) OVER (PARTITION BY user_id ORDER BY placed_at
+    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS rolling_3
+FROM orders ORDER BY user_id, placed_at;
+```
+
+**Related:** [SELECT](/v0.1.0/sql/select) · [Aggregates](/v0.1.0/sql/aggregates)

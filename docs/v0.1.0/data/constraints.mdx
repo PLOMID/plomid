@@ -1,0 +1,26 @@
+---
+title: Constraints, defaults, keys
+description: NOT NULL, DEFAULT, UNIQUE, PRIMARY KEY, CHECK — what is enforced.
+---
+
+# Constraints, defaults, keys
+
+```sql
+CREATE TABLE users (
+  id BIGINT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  credit NUMERIC(12,2) NOT NULL DEFAULT 1000.00,
+  status TEXT NOT NULL DEFAULT 'active',
+  CONSTRAINT positive_credit CHECK (credit >= 0)
+);
+```
+
+| Constraint | Enforcement in v0.1.0 |
+|---|---|
+| `NOT NULL` | write-time reject |
+| `DEFAULT <expr>` | applied on missing column (incl. `now()`) |
+| `UNIQUE` / `PRIMARY KEY` | persistent B-tree authority + transient unique-gate reservation; conflict → error |
+| `CHECK (expr)` | evaluated per row |
+| Foreign keys | **not enforced** (see [Compatibility](/v0.1.0/sql/compatibility)) |
+
+Duplicate handling: unique/PK violations error the statement (and the transaction if in-txn). Empty results, not errors, signal no-match on reads. `ON CONFLICT … DO NOTHING/DO UPDATE` is the idempotent-write path — see [INSERT](/v0.1.0/sql/insert).

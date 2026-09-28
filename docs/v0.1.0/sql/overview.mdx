@@ -1,0 +1,34 @@
+---
+title: SQL overview
+description: The complete implemented SQL surface of PLOMID v0.1.0.
+---
+
+# SQL overview
+
+**Source of truth:** the implementation — parser, AST, and executor. Only behavior verified there is documented below.
+
+## Statements
+
+| Statement | Status | Page |
+|---|---|---|
+| `SELECT`, bare `VALUES` | Supported | [SELECT](/v0.1.0/sql/select) |
+| `INSERT` (values / default / select / conflict / returning) | Supported | [INSERT](/v0.1.0/sql/insert) |
+| `UPDATE` (+`FROM`, JSON targets, `RETURNING`) | Supported (Partial: `UPDATE…FROM` not in explicit txn) | [UPDATE](/v0.1.0/sql/update) |
+| `DELETE` (+`USING`, `RETURNING`), `TRUNCATE` | Supported | [DELETE](/v0.1.0/sql/delete) |
+| `CREATE TABLE|DATABASE|SCHEMA|VIEW|MATERIALIZED VIEW(stub)|INDEX|SEQUENCE|FUNCTION|PROCEDURE|TRIGGER|TYPE|DOMAIN|ROLE|EXTENSION` | Supported or stub (see DDL) | [DDL](/v0.1.0/sql/ddl) |
+| `ALTER TABLE` (rename/add/drop), `DROP …`, `COMMENT ON` | Supported subset | [DDL](/v0.1.0/sql/ddl) |
+| `BEGIN|START TRANSACTION|COMMIT|ROLLBACK|SET TRANSACTION` | Supported | [Transactions](/v0.1.0/transactions/using-transactions) |
+| `SET`, `SHOW`, `DESCRIBE`, `USE`, `GRANT role TO member` (only form) | Supported | [DDL](/v0.1.0/sql/ddl) |
+| `WITH [RECURSIVE]`, `EXPLAIN [ANALYZE]` | Supported | [Subqueries + CTEs](/v0.1.0/sql/subqueries-cte), [EXPLAIN](/v0.1.0/sql/explain) |
+| `COPY … FROM STDIN | TO STDOUT` (wire only) | Supported; file COPY rejected | [DDL](/v0.1.0/sql/ddl) |
+| `VACUUM|ANALYZE|REINDEX|LOCK|CLUSTER|REFRESH|DO|PERFORM|RAISE|LISTEN|NOTIFY|DEALLOCATE|DISCARD` | Parsed, mostly no-op/stub | [Compatibility](/v0.1.0/sql/compatibility) |
+
+`CREATE MATERIALIZED VIEW`, `CREATE INDEX`-as-`Create::Index` legacy stub, `CREATE TRIGGER/PROCEDURE/EXTENSION` parse to stubs without execution. `REFRESH MATERIALIZED VIEW` parses to an empty-name stub.
+
+## Clauses and features
+
+Expressions, operators, functions, aggregates, joins, subqueries, ordering/grouping, pagination, aliases, casts, NULL, JSON, temporal: each has a dedicated page linked from [SELECT](/v0.1.0/sql/select).
+
+## Compatibility philosophy
+
+Similar syntax ≠ compatibility. PLOMID speaks the PG wire protocol and mirrors PG type OIDs, but the executor is its own. [Compatibility](/v0.1.0/sql/compatibility) lists implemented / partial / unsupported / different-behavior explicitly. No `PostgreSQL-compatible` claim is made beyond the wire + catalog surface that is actually implemented.

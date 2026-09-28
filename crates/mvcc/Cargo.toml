@@ -1,0 +1,19 @@
+[package]
+name = "plomid-mvcc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Multi-version concurrency control foundations for PLOMID."
+
+[dependencies]
+plomid-core = { workspace = true }
+
+[lib]
+path = "src/lib.rs"
+
+[lints]
+workspace = true

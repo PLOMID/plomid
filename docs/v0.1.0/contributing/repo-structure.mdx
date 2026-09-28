@@ -1,0 +1,32 @@
+---
+title: Repository structure
+description: Workspace, crates, tests, and where each behavior lives.
+---
+
+# Repository structure
+
+Workspace `Cargo.toml`: 19 crates, `resolver="2"`, `unsafe_code="forbid"`, thin-LTO release.
+
+| Crate | Role | Key files |
+|---|---|---|
+| `core` | IDs, constants, shared kernel | `types.rs`, `constants.rs` (16 KiB page, defaults) |
+| `types` | PG types, values, casts, jsonb | `registry.rs`, `value.rs`, `numeric.rs`, `datetime.rs` |
+| `sql` | lexer, parser, AST, catalog types | `lexer.rs`, `ast.rs`, `parser/*`, `result.rs` |
+| `optimizer` | planning foundations | `lib.rs` (stub in v0.1.0) |
+| `executor` | execution, DML/DDL/txn dispatch | `executor.rs`, `query/*`, `join/*`, `scalar.rs` |
+| `txn` | lifecycle, lanes, group commit, hot rows | `transaction.rs`, `engine_impl.rs`, `concurrent.rs` |
+| `mvcc` | versions, snapshots, GC | `version.rs`, `snapshot.rs`, `store.rs`, `codec.rs` |
+| `storage` | layout, B-tree, buffer, catalog, checkpoints | `layout/*`, `manager.rs`, `btree.rs`, `catalog.rs` |
+| `wal` | log format, segmented WAL, recovery | `format.rs`, `segmented.rs`, `recovery.rs` |
+| `index` | ART + persistent B-tree | `tree.rs`, `btree/*`, `generation.rs` |
+| `columnar` | segments, encodings, stats, pruning | `format.rs`, `encoding/*`, `pruning/*` |
+| `filters` | Roaring + XOR | `roaring.rs`, `xor.rs` |
+| `json` | path, ops, JSON_TABLE | `path.rs`, `ops.rs`, `table.rs` |
+| `network` | wire protocol, session, SCRAM | `protocol/*`, `server/handler.rs`, `session.rs` |
+| `server` | binary, config, lifecycle wiring | `main.rs`, `config.rs` |
+| `cli` | `plomid` management CLI | `main.rs` (`server/db/benchmark/test/config`) |
+| `lifecycle` | mount/demount state machine | `manager.rs`, `mount*.rs`, `stages.rs` |
+| `security` | foundations only | `lib.rs` (auth lives in network) |
+| `crc32c` | checksums | Castagnoli primitive |
+
+Tests: `tests/*.sql` (broad compat, torture, JSON, temporal, RETURNING), `tests/python`, `tests/perf`, `crates/network/tests/integration.rs` (wire), `crates/lifecycle/tests`. Benches per crate. No top-level `examples/` or `docs/` before this generation. Build: `Makefile` (`check/test/fmt/clippy/deny/release/run/docker*`), `Dockerfile` (binary-only), `start.sh` (foreground).

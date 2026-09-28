@@ -1,0 +1,33 @@
+---
+title: Operators
+description: Comparison, arithmetic, string, bitwise, JSON, and array operators with NULL rules.
+---
+
+# Operators
+
+## Comparison and logic
+
+`= != <> < <= > >=`, `AND OR NOT` (implemented as is-true checks — `NULL AND TRUE → false` here, differing from strict 3VL; see [NULL semantics](/v0.1.0/sql/null-semantics)), quantified `op ANY|ALL|SOME`.
+
+## Arithmetic and string
+
+`+ - * / %`, `^` (power, right-assoc), unary `-x`, `||` concat, `& | # << >>` bitwise. Temporal overloads: `date ± int → date`, `ts ± interval → ts`, `date − date → int`, `ts − ts → interval` (`compare.rs:arithmetic_expression`).
+
+## Pattern
+
+`LIKE [ESCAPE]`, `ILIKE` (case flag ignored single-table path), `SIMILAR TO`, `~ ~* !~ !~*` (→ `regex_match*` functions).
+
+## JSON (at multiplicative level)
+
+| Op | Meaning |
+|---|---|
+| `->` / `->>` | field/index as JSON / as text |
+| `#>` / `#>>` | path (`text[]`) as JSON / text |
+| `#-` | delete path |
+| `@> <@ ? ?\| ?& @? @@` | contains / contained / exists / path predicates |
+| `-` on jsonb | `jsonb - key|index|keys` (subtract) |
+| `arr[i]`, `jsonb['k']`, `(r).f` | 1-based subscript / row field |
+
+## NULL rules
+
+Any comparison/arithmetic/`BETWEEN`/`LIKE` with NULL → NULL; `WHERE` keeps only `true`. `IS NULL`, `IS DISTINCT FROM` are NULL-aware. Most scalar functions return NULL on NULL input (`concat` skips NULLs, `concat_ws` NULL sep → NULL).

@@ -1,0 +1,36 @@
+---
+title: Data types
+description: Every column type in v0.1.0 — names, OIDs, literals, arrays, and user types.
+---
+
+# Data types
+
+Registry: `crates/types/src/registry.rs` (PG-17 OIDs), `crates/types/src/column.rs`, parser `crates/sql/src/parser/types.rs`.
+
+| Family | Names | Notes |
+|---|---|---|
+| Integers | `smallint|int2`, `integer|int|int4`, `bigint|int8` | `serial|bigserial|smallserial` create `<table>_<col>_seq` |
+| Float | `real|float4`, `double|float8` (`double precision`) | NaN sorts after infinity (`sort_key`) |
+| Exact | `numeric|decimal|dec[(n[,m])]` | exact add/sub/mul/div (`numeric.rs`) |
+| Text | `text`, `varchar|character varying[(n)]`, `CHAR→varchar` | `bpchar/name/xml` runtime values exist |
+| Bool | `boolean|bool` | `TRUE/FALSE` |
+| Date/time | `date`, `time [with|without tz]`, `timestamp […]`, `timestamptz`, `interval` | micros since 2000-01-01; see [Temporal](/v0.1.0/data/temporal) |
+| JSON | `json`, `jsonb` | `Json(String)` vs canonical `Jsonb(Vec<u8>)` |
+| UUID | `uuid` | |
+| Binary | `bytea`, `bit B'…'` | |
+| Network | `inet`, `oid`, `name` | `macaddr`, `tsvector` runtime values exist |
+| Geometric/range | `point…circle`, `int4range…`, multiranges | value support; range constructors `int4range`, `multirange` |
+| Arrays | `TYPE[]` | `ARRAY[…]`, `arr[i]` 1-based |
+| User | `CREATE TYPE … AS ENUM / AS (cols)`, `CREATE DOMAIN …` | OIDs from 16384 |
+
+`PgType::can_be_column_type()` rejects pseudo-types (`record` only via `ROW(…)` value). `(n)`/`(n,m)` typmod encoded via `encode_typmod`. Multi-word names preserved for casts/DDL.
+
+```sql
+CREATE TABLE t (
+  a INT, b BIGINT, c NUMERIC(12,2), d TEXT, e VARCHAR(10),
+  f BOOLEAN, g DATE, h TIMESTAMPTZ, i INTERVAL, j JSONB, k TEXT[], l UUID
+);
+SELECT 1::bigint, 'x'::text, '[1,2]'::jsonb, B'0101';
+```
+
+**Related:** [Type conversion](/v0.1.0/sql/expressions) · [Constraints](/v0.1.0/data/constraints)

@@ -1,0 +1,63 @@
+---
+title: Quickstart
+description: From nothing installed to first query in minutes.
+---
+
+# Quickstart
+
+```mermaid
+flowchart LR
+    S["./start.sh"] --> C["connect\npsql / DBeaver"] --> Q["first objects\nCREATE → INSERT → SELECT"] --> P["restart\nrows survive"]
+```
+
+<Steps>
+  <Step title="Start PLOMID">
+    ```sh
+    ./start.sh
+    # override: PLOMID_DATA_DIR=./data PLOMID_HOST=127.0.0.1 PLOMID_PORT=5432 \
+    #   PLOMID_USER=plomid PLOMID_PASSWORD=secret PLOMID_LOG_LEVEL=info ./start.sh
+    ```
+    The server prints a startup banner (`PLOMID ENTERPRISE v0.1.0`, wire protocol v3, listen address, auth mode). Leave it running.
+  </Step>
+  <Step title="Connect">
+    ```sh
+    psql "postgresql://plomid:secret@localhost:5432/plomid"
+    ```
+    DBeaver: PostgreSQL connection, host `127.0.0.1`, port `5432`, database `plomid`, user `plomid`, password `secret`.
+  </Step>
+  <Step title="First database objects">
+    ```sql
+    CREATE TABLE users (
+      id   BIGINT PRIMARY KEY,
+      name TEXT NOT NULL,
+      meta JSONB
+    );
+    INSERT INTO users VALUES
+      (1, 'ada', '{"team": "engine"}'),
+      (2, 'grace', '{"team": "research"}');
+    SELECT id, name, meta->>'team' AS team FROM users ORDER BY id;
+    ```
+    Expected result: two rows, `team` extracted from JSON.
+  </Step>
+  <Step title="Prove persistence">
+    Restart the server, reconnect, re-run the `SELECT`. Rows survive restart (WAL + storage sync). See [Developer storage guide](/v0.1.0/storage/developer-guide).
+  </Step>
+</Steps>
+
+## Shared example schema
+
+Most guides reuse this schema so examples compose:
+
+```sql
+CREATE TABLE users  (id BIGINT PRIMARY KEY, name TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT now());
+CREATE TABLE orders (id BIGINT PRIMARY KEY, user_id BIGINT NOT NULL, total NUMERIC(12,2) NOT NULL, placed_at TIMESTAMPTZ NOT NULL);
+CREATE TABLE events (id BIGINT PRIMARY KEY, user_id BIGINT, kind TEXT NOT NULL, payload JSONB, ts TIMESTAMPTZ NOT NULL);
+CREATE INDEX orders_user_idx ON orders (user_id);
+CREATE INDEX events_ts_idx ON events (ts);
+```
+
+## Next steps
+
+- [First database](/v0.1.0/getting-started/first-database) — schemas, `search_path`, multi-database
+- [SQL fundamentals](/v0.1.0/learn/sql-fundamentals)
+- [Query JSON](/v0.1.0/build/query-json) · [Query time](/v0.1.0/build/query-time) · [Run transactions](/v0.1.0/build/run-transactions)

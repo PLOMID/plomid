@@ -1,0 +1,30 @@
+---
+title: EXPLAIN
+description: Plan inspection — syntax, output shapes, and what to look for.
+---
+
+# EXPLAIN
+
+```text
+EXPLAIN [(ANALYZE, FORMAT json|text, COSTS|BUFFERS|…)] statement
+EXPLAIN ANALYZE statement
+```
+
+```sql
+EXPLAIN SELECT * FROM users WHERE id = 5;
+EXPLAIN (ANALYZE, FORMAT JSON) SELECT * FROM orders WHERE user_id = 5;
+```
+
+Implemented in `crates/executor/src/query/explain.rs` → single `QUERY PLAN : text` row (or one JSON doc with `FORMAT JSON`).
+
+| Input | Output shape |
+|---|---|
+| `SELECT` | `Seq Scan on T (cost=1.01..1.01 rows=N width=W) [(filter: WHERE)]` |
+| Join | `Seq Scan on A JOIN B` (+ filter) |
+| `UNION` / `INTERSECT` / `EXCEPT` | `Append [ALL]` / `Hash Intersect [ALL]` / `Hash Except [ALL]` |
+| `WITH` | `CTE Scan (N CTEs)` |
+| `INSERT/UPDATE/DELETE` | `Insert on T` etc. |
+| `ANALYZE` | appends `Actual Rows: N, Execution Time: 0.00ms` (executes inner stmt) |
+| `FORMAT JSON` | `Plan{Node Type, Relation, Startup/Total Cost, Plan Rows/Width}` + actuals |
+
+No cost-based index-choice trace in v0.1.0 (`crates/optimizer` is foundations only). Use `ANALYZE` actuals + [Performance](/v0.1.0/operations/performance) to validate.

@@ -1,0 +1,26 @@
+[package]
+name = "plomid-filters"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "SQL filtering data structures for PLOMID: Roaring bitmaps and XOR filters for predicate pruning."
+
+[dependencies]
+plomid-core = { workspace = true }
+crc32c = { workspace = true }
+
+[dev-dependencies]
+
+[[bench]]
+name = "filters"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+
+[lints]
+workspace = true

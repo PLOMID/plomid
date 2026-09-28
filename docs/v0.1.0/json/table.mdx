@@ -1,0 +1,52 @@
+---
+title: JSON_TABLE — shred documents into rows
+description: Full COLUMNS, NESTED, ORDINALITY, EXISTS, DEFAULT ON EMPTY/ERROR reference.
+---
+
+# JSON_TABLE
+
+```text
+JSON_TABLE(json, path COLUMNS (
+  col TYPE PATH '$.p' [FORMAT JSON] [DEFAULT '...' ON EMPTY|ERROR ...]
+  | col FOR ORDINALITY
+  | col TYPE EXISTS PATH '...'
+  | NESTED PATH '...' COLUMNS (...)
+)) AS alias
+```
+
+## progressively
+
+```sql
+-- 1. flat
+SELECT jt.* FROM JSON_TABLE(
+  '{"name":"ada","age":36}', '$' COLUMNS (name TEXT PATH '$.name', age INT PATH '$.age')
+) AS jt;
+-- 2. array
+SELECT jt.* FROM JSON_TABLE(
+  '{"items":[{"sku":"a","qty":2},{"sku":"b","qty":5}]}', '$.items[*]'
+  COLUMNS (sku TEXT PATH '$.sku', qty INT PATH '$.qty')
+) AS jt;
+-- 3. ordinality + exists + defaults
+SELECT jt.* FROM JSON_TABLE(
+  '{"items":[{"sku":"a"}]}', '$.items[*]' COLUMNS (
+    n FOR ORDINALITY,
+    sku TEXT PATH '$.sku',
+    qty INT PATH '$.qty' DEFAULT '0' ON EMPTY DEFAULT '0' ON ERROR,
+    has_qty BOOLEAN EXISTS PATH '$.qty'
+  )
+) AS jt;
+-- 4. nested
+SELECT jt.* FROM JSON_TABLE(
+  '{"orders":[{"id":1,"lines":[{"sku":"a"}]}]}', '$.orders[*]' COLUMNS (
+    id INT PATH '$.id',
+    NESTED PATH '$.lines[*]' COLUMNS (sku TEXT PATH '$.sku')
+  )
+) AS jt;
+-- 5. join with relational
+SELECT u.name, jt.sku FROM users u,
+  JSON_TABLE(u.payload, '$.items[*]' COLUMNS (sku TEXT PATH '$.sku')) AS jt;
+```
+
+`FORMAT JSON` preserves sub-documents instead of scalarizing. Errors on malformed path/empty/error without DEFAULT → statement error; with DEFAULT → default value.
+
+**Related:** [Functions](/v0.1.0/json/functions) · [Query JSON](/v0.1.0/build/query-json)

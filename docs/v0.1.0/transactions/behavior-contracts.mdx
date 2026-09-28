@@ -1,0 +1,28 @@
+---
+title: Transaction behavior contracts
+description: Observable commit, rollback, concurrency, conflict, and persistence guarantees.
+---
+
+# Transaction behavior contracts
+
+## Supported behavior
+
+| Behavior | Contract |
+|---|---|
+| Commit durability | WAL `Commit+ts` fsync precedes page application; group commit coalesces concurrent commits (one fsync + 700µs linger when busy). Durable watermark monotonic per segment. |
+| Commit ordering | WAL fsync → pages → visibility (`install_committed`). Per-commit page fsync skipped; checkpointer owns it. |
+| Rollback | `Abort` fsync'd; buffers discarded; no versions installed. |
+| Visibility | MVCC snapshot rules ([MVCC](/v0.1.0/transactions/mvcc)); autocommit reads bypass engine mutex once versions complete. |
+| Conflicts | Per-table exclusive gates, per-row gates (`\0R\0+key`), unique gates (`\0U\0index\0value`); first lane wins, others `Conflict`. Snapshot refreshed after lane acquisition (re-evaluation under fresh snapshot). |
+| Hot rows | Logical `RowId` keys (`~hr\x01` + BE id); UPDATE preserves RowId; DELETE via tombstone; `PAGE_DATA_SIZE` enforced. |
+| Failure | Double commit/abort, commit-after-abort, write-after-end → `Transaction` error. Unclosed `BEGIN` → `Conflict`. |
+
+## Implementation detail (not a public promise)
+
+Allocator IDs from 1 (`u64::MAX-1` cap); `next_txn/next_ts` rebuilt as max+1 on open so IDs never reuse; `SCAN_CHUNK_ROWS=1024`; linger 700µs.
+
+## Unspecified / not guaranteed
+
+Cross-segment atomicity beyond single storage txn, multi-statement isolation levels beyond snapshot behavior, fair lane scheduling, bounded conflict-retry counts. Do not build on these.
+
+**Troubleshoot:** [Troubleshooting](/v0.1.0/troubleshooting/overview) · **Operate:** [WAL / recovery](/v0.1.0/storage/wal-checkpoints-recovery)
