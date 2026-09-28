@@ -211,7 +211,7 @@ jobs:
 
   docker:
     name: docker multi-arch
-    needs: [gates]
+    needs: [gates, linux-x64, linux-arm64]
     runs-on: ubuntu-latest
     env:
       # Docker Hub personal access token (write access to plomid/plomid).
