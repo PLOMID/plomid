@@ -344,9 +344,11 @@ jobs:
             echo "::warning::tap clone failed (empty or missing repo); initializing fresh"
             mkdir -p homebrew-plomid/Formula
             git -C homebrew-plomid init -b main
-            gh auth setup-git
             git -C homebrew-plomid remote add origin "https://github.com/plomid/homebrew-plomid.git"
           fi
+          # gh repo clone does not configure git credentials for later
+          # pushes: register GH_TOKEN as the github.com credential helper.
+          gh auth setup-git
       - name: generate formula
         env:
           VERSION: ${{ github.ref_name }}
