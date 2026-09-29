@@ -3,7 +3,7 @@
 # PLOMID — Platform for Modern Intelligence and Data
 # Author: Sainath Sapa
 # GitHub: https://github.com/sainathsapa
-name: CI
+name: 🚀 CI
 
 on:
   push:
@@ -17,7 +17,7 @@ env:
 
 jobs:
   fmt:
-    name: fmt
+    name: 🎨 fmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
       - run: make fmt-check
 
   check:
-    name: check
+    name: 🔍 check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
       - run: make check
 
   clippy:
-    name: clippy
+    name: 📎 clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,7 +47,7 @@ jobs:
       - run: make clippy
 
   deny:
-    name: deny
+    name: 🛡️ deny
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
           arguments: --all-features
 
   test:
-    name: test
+    name: 🧪 test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

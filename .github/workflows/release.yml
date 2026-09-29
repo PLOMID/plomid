@@ -35,11 +35,11 @@ env:
 
 jobs:
   gates:
-    name: gates
+    name: 🚦 gates
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: tag matches Cargo.toml
+      - name: 🏷️ tag matches Cargo.toml
         run: |
           set -euo pipefail
           TAG="${GITHUB_REF_NAME#v}"
@@ -47,7 +47,7 @@ jobs:
           test "$TAG" = "$CARGO" || {
             echo "tag v$TAG != Cargo.toml $CARGO; bump the version first"; exit 1;
           }
-      - name: version must not exist
+      - name: 🔒 version must not exist
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -75,7 +75,7 @@ jobs:
       - run: make test
 
   macos-arm64:
-    name: macOS arm64
+    name: 🍎 macOS arm64
     needs: [gates]
     runs-on: macos-14
     steps:
@@ -91,7 +91,7 @@ jobs:
           path: dist/artifacts/*
 
   macos-x64:
-    name: macOS x64
+    name: 🍎 macOS x64
     needs: [gates]
     # No Intel macOS runners remain: cross-compile x86_64 from Apple silicon.
     # Rust cross-compilation needs no extra toolchain for this target.
@@ -113,7 +113,7 @@ jobs:
           path: dist/artifacts/*
 
   windows-x64:
-    name: Windows x64
+    name: 🪟 Windows x64
     needs: [gates]
     runs-on: windows-latest
     steps:
@@ -121,7 +121,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --release --locked -p plomid-server
-      - name: portable zip
+      - name: 📦 portable zip
         run: |
           New-Item -ItemType Directory -Force dist/artifacts | Out-Null
           New-Item -ItemType Directory -Force dist/stage | Out-Null
@@ -130,14 +130,14 @@ jobs:
           Copy-Item assets/plomid-emblem-copper.png dist/stage/plomid-emblem-copper.png
           Compress-Archive -Path dist/stage/plomid.exe,dist/stage/README.txt,dist/stage/plomid-emblem-copper.png `
             -DestinationPath "dist/artifacts/plomid-${{ github.ref_name }}-windows-x64.zip" -Force
-      - name: installer icon
+      - name: 🎨 installer icon
         run: |
           python -m pip install --quiet pillow
           python -c "from PIL import Image; Image.open('assets/plomid-emblem-copper.png').save('dist/stage/plomid.ico', sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])"
           if (-not (Test-Path dist/stage/plomid.ico)) { throw "icon generation failed" }
-      - name: install NSIS
+      - name: 🔧 install NSIS
         run: choco install nsis -y --no-progress
-      - name: installer exe
+      - name: 💿 installer exe
         run: |
           # makensis resolves relative paths against the script's directory
           # (dist/windows/), not the repo root — pass absolute paths.
@@ -149,7 +149,7 @@ jobs:
           path: dist/artifacts/*
 
   linux-x64:
-    name: Linux x64
+    name: 🐧 Linux x64
     needs: [gates]
     runs-on: ubuntu-latest
     steps:
@@ -164,7 +164,7 @@ jobs:
           path: dist/artifacts/*
 
   linux-arm64:
-    name: Linux arm64
+    name: 🐧 Linux arm64
     needs: [gates]
     runs-on: ubuntu-24.04-arm
     steps:
@@ -179,7 +179,7 @@ jobs:
           path: dist/artifacts/*
 
   linux-packages:
-    name: Linux deb/rpm
+    name: 📦 Linux deb/rpm
     needs: [linux-x64]
     runs-on: ubuntu-latest
     steps:
@@ -188,7 +188,7 @@ jobs:
         with:
           name: linux-x64
           path: dist/artifacts
-      - name: install nfpm
+      - name: 🔧 install nfpm
         run: |
           set -euo pipefail
           NFPM_VERSION=2.35.1
@@ -204,7 +204,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    name: publish release
+    name: 🚀 publish release
     needs: [macos-arm64, macos-x64, windows-x64, linux-x64, linux-arm64, linux-packages]
     runs-on: ubuntu-latest
     steps:
@@ -213,14 +213,17 @@ jobs:
           path: dist/artifacts
           pattern: '{macos-arm64,macos-x64,windows-x64,linux-x64,linux-arm64,linux-packages}'
           merge-multiple: true
-      - name: checksums
+      - name: 🔐 checksums
         run: |
           set -euo pipefail
           printf '\033[38;2;226;104;60m==>\033[0m \033[1mPLOMID %s checksums\033[0m\n' "${{ github.ref_name }}"
           cd dist/artifacts
-          sha256sum plomid-* > SHA256SUMS.txt
+          ls -l
+          # NOTE: deb files are plomid_<ver>_<arch>.deb (underscore), so the
+          # glob must be plomid* not plomid-* or the .deb is silently skipped.
+          sha256sum plomid* > SHA256SUMS.txt
           cat SHA256SUMS.txt
-      - name: create release
+      - name: 🚀 create release
         env:
           GH_TOKEN: ${{ github.token }}
           # This job does not check out the repository (it only downloads
@@ -236,10 +239,11 @@ jobs:
             PRE=""
           fi
           # shellcheck disable=SC2086
-          gh release create "${{ github.ref_name }}" $PRE --title "${{ github.ref_name }}" --notes "$NOTES" dist/artifacts/plomid-* dist/artifacts/SHA256SUMS.txt
+          # NOTE: plomid* (not plomid-*) so the underscore-named .deb is included.
+          gh release create "${{ github.ref_name }}" $PRE --title "${{ github.ref_name }}" --notes "$NOTES" dist/artifacts/plomid* dist/artifacts/SHA256SUMS.txt
 
   docker:
-    name: docker multi-arch
+    name: 🐳 docker multi-arch
     needs: [gates, linux-x64, linux-arm64]
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -249,7 +253,7 @@ jobs:
       DOCKER_PAT: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - name: check docker tag
+      - name: 🔍 check docker tag
         id: check
         run: |
           set -euo pipefail
@@ -301,16 +305,16 @@ jobs:
             plomid/plomid:latest
 
   homebrew:
-    name: update homebrew tap
+    name: 🍺 update homebrew tap
     needs: [publish]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - name: checkout plomid
+      - name: 📥 checkout plomid
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: download macOS release assets
+      - name: 📥 download macOS release assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -321,7 +325,7 @@ jobs:
             --pattern "plomid-${GITHUB_REF_NAME}-macos-arm64.tar.gz" \
             --pattern "plomid-${GITHUB_REF_NAME}-macos-x64.tar.gz" \
             --dir dist
-      - name: calculate SHA256
+      - name: 🔐 calculate SHA256
         id: sha
         run: |
           set -euo pipefail
@@ -329,7 +333,7 @@ jobs:
           X64_SHA256="$(sha256sum "dist/plomid-${GITHUB_REF_NAME}-macos-x64.tar.gz" | awk '{print $1}')"
           echo "arm64=${ARM64_SHA256}" >> "$GITHUB_OUTPUT"
           echo "x64=${X64_SHA256}" >> "$GITHUB_OUTPUT"
-      - name: checkout homebrew tap
+      - name: 📥 checkout homebrew tap
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
@@ -349,7 +353,7 @@ jobs:
           # gh repo clone does not configure git credentials for later
           # pushes: register GH_TOKEN as the github.com credential helper.
           gh auth setup-git
-      - name: generate formula
+      - name: 🍺 generate formula
         env:
           VERSION: ${{ github.ref_name }}
           ARM64_SHA256: ${{ steps.sha.outputs.arm64 }}
@@ -392,7 +396,7 @@ jobs:
             end
           end
           EOF
-      - name: commit and push formula
+      - name: 📤 commit and push formula
         working-directory: homebrew-plomid
         env:
           VERSION: ${{ github.ref_name }}
