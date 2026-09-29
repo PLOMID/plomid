@@ -1,0 +1,69 @@
+---
+title: Run the PLOMID server
+description: Foreground, start.sh, Docker, lifecycle, and shutdown behavior.
+---
+
+# Run the PLOMID server
+
+## Foreground (established workflow)
+
+```sh
+./start.sh [data_dir] [host] [port] [user] [password]
+# env overrides: PLOMID_DATA_DIR PLOMID_HOST PLOMID_PORT PLOMID_USER PLOMID_PASSWORD PLOMID_LOG_LEVEL
+```
+
+Defaults: `DATA_DIR=./data HOST=0.0.0.0 PORT=5432 USER=plomid PASSWORD=secret LOG_LEVEL=info`. Non-loopback hosts get `--allow-remote-plaintext` + warning (credentials in clear until TLS lands). Direct binary:
+
+```sh
+cargo run --bin plomid-server -- --data ./data --host 127.0.0.1 --port 5432 \
+  --username plomid --password secret --log-level info
+make run   # release binary, loopback, ./data
+```
+
+## Lifecycle (`crates/lifecycle`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Closed
+    Closed --> Mounting : mount(root)
+    Closed --> Mounting : create(root) then mount
+    Mounting --> Ready : Device→Format→Metadata→Checkpoint→Recovery→Catalog→Generation
+    Mounting --> Failed : any stage fails
+    Ready --> Demounting : demount()
+    Demounting --> Closed : StopMutations→Flush→Checkpoint→Sync→Close
+    Demounting --> Failed : failure
+    Failed --> Closed : release
+```
+
+`create(root)` only creation path; `mount(root)` never creates (requires dir + layout validation; order Device→Format→Metadata→Checkpoint→Recovery→Catalog→Generation→Ready; failure → `Failed`). `demount()`: StopMutations→Flush→Checkpoint(if WAL>1)→Sync→Close. `mount_trace` observable for diagnostics.
+
+Server shutdown: drop accept, `drain(live, 5s)` (`SHUTDOWN_GRACE_SECS=5`), worker shutdown, `checkpoint_with_report(Shutdown)`, `server_shutdown` log.
+
+## Docker
+
+```sh
+make docker && make docker-run PORT=5432
+make docker-logs && make docker-stop
+```
+
+Image: Debian slim, user `plomid:10001`, only `plomid-server`, volume `/var/lib/plomid/data`, `HEALTHCHECK bash /dev/tcp/…`, env `PLOMID_HOST=0.0.0.0 PLOMID_ALLOW_INSECURE_REMOTE=true`.
+
+## Connect
+
+```mermaid
+flowchart TB
+    subgraph You["your machine or server"]
+        CLI["plomid CLI"] --- APP["your app"] --- BI["psql / DBeaver"]
+    end
+    You -->|"TCP 5432"| SRV["plomid-server"]
+    SRV --> VOL[("data volume\nWAL + catalog + packs")]
+```
+
+```sh
+psql "postgresql://plomid:secret@localhost:5432/plomid"
+./target/debug/plomid server status --port 5432
+```
+
+Auth: `scram` (default, salt=sha256(password)[..16], PBKDF2 4096/32) | `md5` | `password/cleartext` | `none/disabled` (loopback only). TLS flags exist but handshake is declined (`tls_mode_not_yet_implemented`) — plan plaintext on trusted networks only.
+
+**Next:** [Configuration](/v0.1.0/operations/configuration) · [CLI](/v0.1.0/operations/cli)

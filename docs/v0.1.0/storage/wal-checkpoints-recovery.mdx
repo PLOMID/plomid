@@ -1,0 +1,32 @@
+---
+title: WAL, checkpoints, recovery
+description: Write-ahead log format, checkpoint lifecycle, crash recovery, and operator controls.
+---
+
+# WAL, checkpoints, recovery
+
+## WAL (`crates/wal`)
+
+Record v2: `PLW2|ver|type|lsn|tx|object|payload_len|payload|CRC32C`, `MAX_PAYLOAD 64 MiB`. Types `Data=1 Begin=2 Commit=3 Abort=4 Checkpoint=5`. `Data = txn + op(Put=1/Delete=2) + klen+vlen+key+value`; `Commit+ts = txn+commit_ts`.
+
+`WalWriter`: LSN from 1, no gaps; `append → flush → commit/sync` (fsync = durable watermark; `Buffered` skips commit fsync). `SegmentedWal` (`<root>/wal/WAL-<012>.dat`, 32 B `PLWS` header): rotation before overflow, never splits records, never rotates mid-transaction; `checkpoint_with_watermarks` + atomic marker; `reclaim_before` removes whole-file contiguous prefix only when no open txn spans it. Active segment never removed.
+
+## Checkpoints
+
+File `checkpoints/checkpoint-<020>.ckpt` (`PLCK v1`, opaque meta ≤4 MiB, CRC over header+meta). Lifecycle `BUILD→FLUSH→VERIFY→SYNC→PUBLISH` (atomic rename + dir fsync); rejects backward lsn/storage/catalog and `lsn > durable_lsn`. Engine checkpoint: `storage.sync() → wal.checkpoint_with_watermarks → wal.reclaim_before(lsn)`. No storage `.ckpt` in KV deployment — WAL marker is the boundary.
+
+Policy (`crates/txn/src/checkpoint_policy.rs`, pure function): defaults **64 MiB WAL bytes, 16 segments, 15 min**; evaluated at begin/commit; failures recorded, not propagated. Disable: `--no-auto-checkpoint` or zero thresholds.
+
+## Recovery (`recovery.rs`, `checkpoint_recovery.rs`)
+
+`validate_storage_physical → validate_wal_environment (contiguous sequences) → select_checkpoint (descending, must decode, filename==generation, durable+gen checks) → replay strictly after boundary → sync`. Strict `LSN+1` continuity; `Commit` applies buffered puts/deletes idempotently only if `lsn>boundary`; `Abort`/incomplete dropped; only final segment may have torn tail. Report: applied records/bytes/txns/ops, last_lsn, segments, crash-tail boundary, state machine through `Ready`. `next_txn/next_ts` rebuilt as max+1.
+
+```mermaid
+flowchart LR
+    Crash --> Validate["validate root + WAL contiguity"]
+    Validate --> Select["select checkpoint"]
+    Select --> Replay["replay after boundary"]
+    Replay --> Ready["Reconstruct + Ready"]
+```
+
+Operator knobs: `--checkpoint-wal-bytes`, `--checkpoint-segments`, `--checkpoint-interval-secs`. See [Configuration](/v0.1.0/operations/configuration).

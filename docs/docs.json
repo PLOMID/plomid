@@ -1,0 +1,191 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "PLOMID",
+  "description": "PLOMID v0.1.0 developer documentation — install, build, query, operate, and explore internals.",
+  "colors": {
+    "primary": "#0E7490"
+  },
+  "navigation": [
+    {
+      "group": "Overview",
+      "icon": "rocket",
+      "pages": [
+        "v0.1.0/index",
+        "v0.1.0/getting-started/what-is-plomid",
+        "v0.1.0/getting-started/installation",
+        "v0.1.0/getting-started/quickstart",
+        "v0.1.0/getting-started/first-database"
+      ]
+    },
+    {
+      "group": "Learn",
+      "icon": "graduation-cap",
+      "pages": [
+        "v0.1.0/learn/concepts",
+        "v0.1.0/learn/data-model",
+        "v0.1.0/learn/sql-fundamentals",
+        "v0.1.0/learn/learning-paths",
+        "v0.1.0/architecture/overview",
+        "v0.1.0/architecture/request-lifecycle",
+        "v0.1.0/architecture/query-pipeline"
+      ]
+    },
+    {
+      "group": "Build",
+      "icon": "hammer",
+      "pages": [
+        "v0.1.0/build/create-database",
+        "v0.1.0/build/create-table",
+        "v0.1.0/build/insert-data",
+        "v0.1.0/build/query-data",
+        "v0.1.0/build/query-json",
+        "v0.1.0/build/query-time",
+        "v0.1.0/build/create-index",
+        "v0.1.0/build/run-transactions",
+        "v0.1.0/build/inspect-query",
+        "v0.1.0/build/build-application"
+      ]
+    },
+    {
+      "group": "SQL",
+      "icon": "database",
+      "pages": [
+        "v0.1.0/sql/overview",
+        "v0.1.0/sql/select",
+        "v0.1.0/sql/insert",
+        "v0.1.0/sql/update",
+        "v0.1.0/sql/delete",
+        "v0.1.0/sql/ddl",
+        "v0.1.0/sql/create-function",
+        "v0.1.0/sql/create-type-domain",
+        "v0.1.0/sql/roles-permissions",
+        "v0.1.0/sql/expressions",
+        "v0.1.0/sql/operators",
+        "v0.1.0/sql/functions",
+        "v0.1.0/sql/aggregates",
+        "v0.1.0/sql/window-functions",
+        "v0.1.0/sql/joins",
+        "v0.1.0/sql/subqueries-cte",
+        "v0.1.0/sql/ordering-grouping",
+        "v0.1.0/sql/pagination",
+        "v0.1.0/sql/null-semantics",
+        "v0.1.0/sql/show-describe",
+        "v0.1.0/sql/explain",
+        "v0.1.0/sql/compatibility"
+      ]
+    },
+    {
+      "group": "JSON",
+      "icon": "braces",
+      "pages": [
+        "v0.1.0/json/overview",
+        "v0.1.0/json/operators",
+        "v0.1.0/json/functions",
+        "v0.1.0/json/table",
+        "v0.1.0/json/edge-cases"
+      ]
+    },
+    {
+      "group": "Time-series",
+      "icon": "chart-line",
+      "pages": [
+        "v0.1.0/timeseries/overview",
+        "v0.1.0/timeseries/queries"
+      ]
+    },
+    {
+      "group": "Data",
+      "icon": "table",
+      "pages": [
+        "v0.1.0/data/types",
+        "v0.1.0/data/enums-domains",
+        "v0.1.0/data/ranges",
+        "v0.1.0/data/json",
+        "v0.1.0/data/temporal",
+        "v0.1.0/data/constraints",
+        "v0.1.0/data/sequences-views"
+      ]
+    },
+    {
+      "group": "Indexes & Transactions",
+      "icon": "arrows-rotate",
+      "pages": [
+        "v0.1.0/indexes/overview",
+        "v0.1.0/transactions/using-transactions",
+        "v0.1.0/transactions/examples",
+        "v0.1.0/transactions/mvcc",
+        "v0.1.0/transactions/behavior-contracts"
+      ]
+    },
+    {
+      "group": "Storage & Operations",
+      "icon": "server",
+      "pages": [
+        "v0.1.0/storage/developer-guide",
+        "v0.1.0/storage/engine-internals",
+        "v0.1.0/storage/wal-checkpoints-recovery",
+        "v0.1.0/storage/columnar",
+        "v0.1.0/operations/run-server",
+        "v0.1.0/operations/configuration",
+        "v0.1.0/operations/cli",
+        "v0.1.0/operations/logging-diagnostics",
+        "v0.1.0/operations/performance"
+      ]
+    },
+    {
+      "group": "Cookbook",
+      "icon": "book-open",
+      "pages": [
+        "v0.1.0/cookbook/overview",
+        "v0.1.0/cookbook/ecommerce",
+        "v0.1.0/cookbook/complex-queries",
+        "v0.1.0/cookbook/what-to-build"
+      ]
+    },
+    {
+      "group": "Reference",
+      "icon": "book",
+      "pages": [
+        "v0.1.0/reference/cli-reference",
+        "v0.1.0/reference/config-reference",
+        "v0.1.0/reference/scalar-functions",
+        "v0.1.0/reference/errors",
+        "v0.1.0/reference/pg-catalog"
+      ]
+    },
+    {
+      "group": "Future models",
+      "icon": "sparkles",
+      "pages": [
+        "v0.1.0/future/vector-graph"
+      ]
+    },
+    {
+      "group": "Architecture deep dive",
+      "icon": "microchip",
+      "pages": [
+        "v0.1.0/architecture/executor",
+        "v0.1.0/architecture/index-algorithms",
+        "v0.1.0/architecture/storage-algorithms",
+        "v0.1.0/architecture/mvcc-filtering",
+        "v0.1.0/architecture/how-it-works"
+      ]
+    },
+    {
+      "group": "Debug & Contribute",
+      "icon": "wrench",
+      "pages": [
+        "v0.1.0/troubleshooting/overview",
+        "v0.1.0/contributing/overview",
+        "v0.1.0/contributing/repo-structure",
+        "v0.1.0/migration/postgres-users"
+      ]
+    }
+  ],
+  "footer": {
+    "socials": {
+      "github": "https://github.com/dsk-solutions/plomid"
+    }
+  }
+}

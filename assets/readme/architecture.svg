@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="760" viewBox="0 0 1560 760" role="img" aria-labelledby="arT arD">
+  <title id="arT">PLOMID system map</title>
+  <desc id="arD">Five bands: SQL clients connect over the PostgreSQL wire protocol into the SQL engine (parser, binder, planner, executor, MVCC, transactions), which sits on the storage core (write-ahead log, storage engines, indexing, columnar, JSON, filters, lifecycle, CRC32C, types), on top of security and host storage. One logical database, no external engine underneath.</desc>
+  <style>
+    .t{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
+    .m{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace}
+    @media (prefers-reduced-motion:reduce){.sig{display:none}}
+  </style>
+  <defs>
+    <linearGradient id="acu" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e2683c"/>
+      <stop offset="1" stop-color="#f0925f"/>
+    </linearGradient>
+    <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+
+  <!-- ink surface -->
+  <rect width="1560" height="760" fill="#08090b"/>
+
+  <!-- plate label + legend -->
+  <text class="m" x="24" y="30" font-size="10" letter-spacing="3" fill="#6b7178">PLOMID · SYSTEM MAP</text>
+  <g class="m" font-size="10" fill="#a0a6ae">
+    <rect x="1120" y="17" width="22" height="14" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+    <text x="1150" y="28">available today</text>
+    <rect x="1290" y="17" width="22" height="14" rx="2" fill="none" stroke="#6b7178" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="1320" y="28">roadmap / design</text>
+  </g>
+
+  <!-- band separators -->
+  <g stroke="rgba(255,255,255,0.10)" stroke-width="1">
+    <line x1="0" y1="130" x2="1560" y2="130"/>
+    <line x1="0" y1="225" x2="1560" y2="225"/>
+    <line x1="0" y1="405" x2="1560" y2="405"/>
+    <line x1="0" y1="610" x2="1560" y2="610"/>
+    <line x1="0" y1="710" x2="1560" y2="710"/>
+  </g>
+
+  <!-- the spine -->
+  <line x1="170" y1="44" x2="170" y2="700" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
+  <g>
+    <rect x="166.5" y="73.5"  width="7" height="7" fill="#14171b" stroke="rgba(255,255,255,0.25)"/>
+    <rect x="166.5" y="177.5" width="7" height="7" fill="#e2683c"/>
+    <rect x="166.5" y="311.5" width="7" height="7" fill="#14171b" stroke="rgba(255,255,255,0.25)"/>
+    <rect x="166.5" y="503.5" width="7" height="7" fill="#14171b" stroke="rgba(255,255,255,0.25)"/>
+    <rect x="166.5" y="660.5" width="7" height="7" fill="#14171b" stroke="rgba(255,255,255,0.25)"/>
+  </g>
+  <!-- one signal travelling the spine -->
+  <circle class="sig" r="3" fill="#e2683c">
+    <animateMotion dur="9s" repeatCount="indefinite" path="M170,44 L170,700"/>
+  </circle>
+
+  <!-- band labels -->
+  <g class="m" font-size="10" letter-spacing="2.5" fill="#6b7178">
+    <rect x="24" y="76" width="3" height="10" fill="#3a3f45"/><text x="34" y="85">CLIENTS</text>
+    <rect x="24" y="176" width="3" height="10" fill="#e2683c"/><text x="34" y="185">WIRE</text>
+    <rect x="24" y="310" width="3" height="10" fill="#3a3f45"/><text x="34" y="319">SQL</text>
+    <rect x="24" y="499" width="3" height="10" fill="#3a3f45"/><text x="34" y="508">STORAGE</text>
+    <rect x="24" y="656" width="3" height="10" fill="#3a3f45"/><text x="34" y="665">BASE</text>
+  </g>
+
+  <!-- ===================== band 1 · clients ===================== -->
+  <g>
+    <rect x="180" y="45" width="322" height="64" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="341" y="72" text-anchor="middle" font-size="14" font-weight="600" fill="#f2f2ef">SQL clients</text>
+    <text class="m" x="341" y="92" text-anchor="middle" font-size="9.5" fill="#6b7178">psql · DBeaver · pgAdmin</text>
+
+    <rect x="526" y="45" width="322" height="64" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="687" y="72" text-anchor="middle" font-size="14" font-weight="600" fill="#f2f2ef">Applications &amp; SDKs</text>
+    <text class="m" x="687" y="92" text-anchor="middle" font-size="9.5" fill="#6b7178">any PostgreSQL driver</text>
+
+    <rect x="872" y="45" width="322" height="64" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="1033" y="72" text-anchor="middle" font-size="14" font-weight="600" fill="#f2f2ef">plomid CLI</text>
+    <text class="m" x="1033" y="92" text-anchor="middle" font-size="9.5" fill="#6b7178">readiness · health · bench</text>
+
+    <rect x="1218" y="45" width="322" height="64" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="1379" y="72" text-anchor="middle" font-size="14" font-weight="600" fill="#f2f2ef">Jobs &amp; services</text>
+    <text class="m" x="1379" y="92" text-anchor="middle" font-size="9.5" fill="#6b7178">ETL · agents · schedulers</text>
+  </g>
+  <!-- client stubs into the wire -->
+  <g stroke="rgba(255,255,255,0.20)" stroke-width="1">
+    <line x1="341" y1="109" x2="341" y2="155"/>
+    <line x1="687" y1="109" x2="687" y2="155"/>
+    <line x1="1033" y1="109" x2="1033" y2="155"/>
+    <line x1="1379" y1="109" x2="1379" y2="155"/>
+  </g>
+
+  <!-- ===================== band 2 · wire protocol ===================== -->
+  <rect x="180" y="155" width="1360" height="52" rx="2" fill="rgba(226,104,60,0.08)" stroke="#e2683c" stroke-width="1"/>
+  <text class="t" x="860" y="187" text-anchor="middle" font-size="16" font-weight="600" fill="#f2f2ef">PostgreSQL Frontend/Backend Protocol v3 — native</text>
+  <text class="m" x="200" y="186" font-size="10" fill="#f0925f">crates/network</text>
+  <text class="m" x="1520" y="186" text-anchor="end" font-size="10" fill="#f0925f">sessions · auth · extended query</text>
+  <g fill="#e2683c">
+    <rect x="337.5" y="151.5" width="7" height="7"/>
+    <rect x="683.5" y="151.5" width="7" height="7"/>
+    <rect x="1029.5" y="151.5" width="7" height="7"/>
+    <rect x="1375.5" y="151.5" width="7" height="7"/>
+  </g>
+  <!-- stub into the engine -->
+  <line x1="330" y1="207" x2="330" y2="250" stroke="#e2683c" stroke-width="1"/>
+  <rect x="326.5" y="246.5" width="7" height="7" fill="#e2683c"/>
+
+  <!-- ===================== band 3 · sql engine ===================== -->
+  <g>
+    <rect x="180" y="250" width="300" height="58" rx="2" fill="#14171b" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="330" y="273" text-anchor="middle" font-size="14" font-weight="600" fill="#f2f2ef">Parser</text>
+    <text class="m" x="330" y="292" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/sql · text → AST</text>
+
+    <rect x="520" y="250" width="300" height="58" rx="2" fill="#14171b" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="670" y="273" text-anchor="middle" font-size="14" font-weight="600" fill="#f2f2ef">Binder</text>
+    <text class="m" x="670" y="292" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/sql · names → catalog</text>
+
+    <rect x="860" y="250" width="300" height="58" rx="2" fill="#14171b" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="1010" y="273" text-anchor="middle" font-size="14" font-weight="600" fill="#f2f2ef">Planner · Optimizer</text>
+    <text class="m" x="1010" y="292" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/optimizer · logical → physical</text>
+
+    <rect x="1200" y="250" width="300" height="58" rx="2" fill="#14171b" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="1350" y="273" text-anchor="middle" font-size="14" font-weight="600" fill="#f2f2ef">Executor</text>
+    <text class="m" x="1350" y="292" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/executor · operators</text>
+  </g>
+  <!-- copper path between stages -->
+  <g stroke="#e2683c" stroke-width="1" fill="#e2683c">
+    <line x1="482" y1="279" x2="511" y2="279"/><polygon points="511,275 520,279 511,283" stroke="none"/>
+    <line x1="822" y1="279" x2="851" y2="279"/><polygon points="851,275 860,279 851,283" stroke="none"/>
+    <line x1="1162" y1="279" x2="1191" y2="279"/><polygon points="1191,275 1200,279 1191,283" stroke="none"/>
+  </g>
+
+  <g>
+    <rect x="180" y="336" width="660" height="54" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="510" y="359" text-anchor="middle" font-size="13.5" font-weight="600" fill="#f2f2ef">Multi-version concurrency control</text>
+    <text class="m" x="510" y="377" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/mvcc · snapshots · version chains</text>
+
+    <rect x="880" y="336" width="660" height="54" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="1210" y="359" text-anchor="middle" font-size="13.5" font-weight="600" fill="#f2f2ef">Transactions &amp; locking</text>
+    <text class="m" x="1210" y="377" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/txn · lifecycle · row locks</text>
+  </g>
+
+  <!-- ===================== band 4 · storage core ===================== -->
+  <g>
+    <rect x="180" y="432" width="322" height="56" rx="2" fill="#14171b" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="341" y="455" text-anchor="middle" font-size="13.5" font-weight="600" fill="#f2f2ef">Write-ahead log</text>
+    <text class="m" x="341" y="475" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/wal · segmented · recovery</text>
+
+    <rect x="526" y="432" width="322" height="56" rx="2" fill="#14171b" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="687" y="455" text-anchor="middle" font-size="13.5" font-weight="600" fill="#f2f2ef">Storage engines</text>
+    <text class="m" x="687" y="475" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/storage · pages · blocks</text>
+
+    <rect x="872" y="432" width="322" height="56" rx="2" fill="#14171b" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="1033" y="455" text-anchor="middle" font-size="13.5" font-weight="600" fill="#f2f2ef">Indexing</text>
+    <text class="m" x="1033" y="475" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/index · ART · B+Tree</text>
+
+    <rect x="1218" y="432" width="322" height="56" rx="2" fill="#14171b" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="1379" y="455" text-anchor="middle" font-size="13.5" font-weight="600" fill="#f2f2ef">Columnar</text>
+    <text class="m" x="1379" y="475" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/columnar · immutable segments</text>
+  </g>
+
+  <g>
+    <rect x="180" y="514" width="210" height="52" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="285" y="536" text-anchor="middle" font-size="12.5" font-weight="600" fill="#f2f2ef">JSON documents</text>
+    <text class="m" x="285" y="553" text-anchor="middle" font-size="9" fill="#6b7178">crates/json</text>
+
+    <rect x="410" y="514" width="210" height="52" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="515" y="536" text-anchor="middle" font-size="12.5" font-weight="600" fill="#f2f2ef">Bitmap filters</text>
+    <text class="m" x="515" y="553" text-anchor="middle" font-size="9" fill="#6b7178">crates/filters · roaring · XOR</text>
+
+    <rect x="640" y="514" width="210" height="52" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="745" y="536" text-anchor="middle" font-size="12.5" font-weight="600" fill="#f2f2ef">Lifecycle</text>
+    <text class="m" x="745" y="553" text-anchor="middle" font-size="9" fill="#6b7178">crates/lifecycle · mount</text>
+
+    <rect x="870" y="514" width="210" height="52" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="975" y="536" text-anchor="middle" font-size="12.5" font-weight="600" fill="#f2f2ef">CRC32C</text>
+    <text class="m" x="975" y="553" text-anchor="middle" font-size="9" fill="#6b7178">crates/crc32c · hw accelerated</text>
+
+    <rect x="1100" y="514" width="210" height="52" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="1205" y="536" text-anchor="middle" font-size="12.5" font-weight="600" fill="#f2f2ef">Type system</text>
+    <text class="m" x="1205" y="553" text-anchor="middle" font-size="9" fill="#6b7178">crates/types · PG-compatible</text>
+
+    <rect x="1330" y="514" width="210" height="52" rx="2" fill="url(#hatch)" stroke="#6b7178" stroke-width="1" stroke-dasharray="4 3"/>
+    <text class="t" x="1435" y="536" text-anchor="middle" font-size="12.5" font-weight="600" fill="#6b7178">Vector · Graph</text>
+    <text class="m" x="1435" y="553" text-anchor="middle" font-size="9" fill="#6b7178">design open</text>
+  </g>
+
+  <!-- ===================== band 5 · base ===================== -->
+  <g>
+    <rect x="180" y="636" width="780" height="56" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <text class="t" x="570" y="659" text-anchor="middle" font-size="13.5" font-weight="600" fill="#f2f2ef">Security</text>
+    <text class="m" x="570" y="677" text-anchor="middle" font-size="9.5" fill="#6b7178">crates/security · authentication · authorization · audit</text>
+
+    <rect x="990" y="636" width="550" height="56" rx="2" fill="#0c0e11" stroke="rgba(255,255,255,0.10)"/>
+    <rect x="1010" y="648" width="12" height="24" fill="#6b7178"/>
+    <rect x="1026" y="654" width="12" height="18" fill="rgba(255,255,255,0.20)"/>
+    <rect x="1042" y="659" width="12" height="13" fill="rgba(255,255,255,0.20)"/>
+    <text class="t" x="1285" y="659" text-anchor="middle" font-size="13.5" font-weight="600" fill="#f2f2ef">Host storage</text>
+    <text class="m" x="1285" y="677" text-anchor="middle" font-size="9.5" fill="#6b7178">WAL segments · data directory</text>
+  </g>
+
+  <!-- the rule -->
+  <text class="m" x="860" y="738" text-anchor="middle" font-size="11.5" fill="#6b7178">One logical database over multiple physical engines — an owned kernel, no external database engine underneath.</text>
+</svg>

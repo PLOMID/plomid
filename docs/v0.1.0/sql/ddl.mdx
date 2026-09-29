@@ -1,0 +1,51 @@
+---
+title: DDL — CREATE, ALTER, DROP, and utilities
+description: Implemented DDL subset, session statements, and housekeeping commands.
+---
+
+# DDL
+
+## CREATE TABLE
+
+See [Create a table](/v0.1.0/build/create-table). Adds: `[TEMP|TEMPORARY]`, `[WITH (…)]`, `[TABLESPACE name]`, `[ON COMMIT …]` parse; storage clauses after the column list.
+
+## Other CREATE (parse status)
+
+| Form | Status |
+|---|---|
+| `CREATE DATABASE name`, `CREATE SCHEMA [IF NOT EXISTS] name` | Supported |
+| `CREATE [OR REPLACE] VIEW name [(cols)] AS SELECT…` | Supported (real view) |
+| `CREATE [UNIQUE] INDEX …` | Supported (see [Indexes](/v0.1.0/indexes/overview)) |
+| `CREATE SEQUENCE name` + `nextval/currval('seq')` | Supported |
+| `CREATE TYPE name AS ENUM(…) / AS (cols)` | Supported (user OIDs from 16384) |
+| `CREATE DOMAIN name AS base CHECK…` | Supported |
+| `CREATE FUNCTION … RETURNS … LANGUAGE … AS $$…$$`, `CREATE PROCEDURE` | Parsed |
+| `CREATE ROLE|USER … [LOGIN|PASSWORD]`, `CREATE EXTENSION`, `CREATE TRIGGER`, `CREATE MATERIALIZED VIEW`, legacy `CREATE INDEX`-as-Create::Index | Stub / parsed only |
+
+## ALTER / DROP / COMMENT
+
+```sql
+ALTER TABLE t RENAME TO t2;
+ALTER TABLE t RENAME COLUMN a TO b;
+ALTER TABLE t ADD [COLUMN] [IF NOT EXISTS] c TYPE [constraints];
+ALTER TABLE t ADD [CONSTRAINT n] UNIQUE|PRIMARY KEY|CHECK …;
+ALTER TABLE t DROP COLUMN c [CASCADE|RESTRICT];
+DROP TABLE|VIEW|SEQUENCE|INDEX|TYPE|DOMAIN|FUNCTION … [IF EXISTS] [CASCADE|RESTRICT];
+COMMENT ON TABLE|COLUMN|TYPE|SCHEMA|ROLE|VIEW|INDEX|SEQUENCE name IS 'text'|NULL;
+```
+
+Only `ALTER TABLE` executes; other `ALTER` → `Unsupported`.
+
+## Session and utility
+
+```sql
+SET [SESSION|LOCAL] name TO value;  SET TIME ZONE 'UTC';  SET NAMES 'UTF8';
+SHOW tables;  SHOW server_version;  DESCRIBE users;  USE shop;   -- full list: [SHOW / DESCRIBE](/v0.1.0/sql/show-describe)
+GRANT admin TO alice;               -- only GRANT role TO member form
+COPY t [(cols)] FROM STDIN;  COPY t TO STDOUT;   -- wire frames only; file COPY rejected
+VACUUM [FULL|ANALYZE|…] [t];  ANALYZE;  TRUNCATE t;  -- tails swallowed / accounted
+DO $$BEGIN … END$$;  PERFORM expr;  RAISE NOTICE 'msg';  -- plpgsql-lite subset
+LISTEN/NOTIFY/DISCARD/DEALLOCATE/UNLISTEN;  -- accepted, no engine effect
+```
+
+`SET search_path` inside a multi-statement batch affects later statements (per-statement parse in `execute_all`).

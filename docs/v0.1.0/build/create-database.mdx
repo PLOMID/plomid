@@ -1,0 +1,38 @@
+---
+title: Create a database
+description: Goal-oriented guide to creating and selecting databases.
+---
+
+# Create a database
+
+**Goal:** create an isolated database and start using it. **Prerequisites:** server running ([Quickstart](/v0.1.0/getting-started/quickstart)).
+
+## Steps
+
+<Steps>
+  <Step title="Create it">
+    ```sql
+    CREATE DATABASE shop;
+    ```
+  </Step>
+  <Step title="Use it">
+    ```sql
+    USE shop;
+    -- or reconnect with database=shop
+    ```
+  </Step>
+  <Step title="Verify">
+    ```sql
+    SHOW databases;
+    SELECT current_database();
+    ```
+  </Step>
+</Steps>
+
+**Expected result:** `SHOW databases` lists `plomid` and `shop`; `current_database()` returns `shop`.
+
+## Explanation
+
+`plomid` shares the root engine; `shop` gets `<data_dir>/databases/shop/` with its own WAL. Names must match `[_A-Za-z][_A-Za-z0-9]*`.
+
+**Next:** [Create a table](/v0.1.0/build/create-table) · **Related:** [Configuration](/v0.1.0/operations/configuration)

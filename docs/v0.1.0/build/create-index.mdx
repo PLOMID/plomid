@@ -1,0 +1,44 @@
+---
+title: Create an index
+description: When to index, what to index, and what query patterns indexes serve.
+---
+
+# Create an index
+
+**Goal:** speed equality, range, ordering, and time-window access; enforce uniqueness.
+
+## Create
+
+```sql
+CREATE INDEX orders_user_idx ON orders (user_id);
+CREATE UNIQUE INDEX users_name_uidx ON users (name);
+CREATE INDEX events_ts_idx ON events (ts);
+CREATE INDEX events_payload_idx ON events ((payload->>'team'));  -- expression key, single expr only
+```
+
+Syntax: `CREATE [UNIQUE] INDEX [IF NOT EXISTS] name ON table [USING method] (col[,…] | (expr))`. One optional opclass after a single column (e.g. `jsonb_path_ops`-style) is accepted. `USING method` names are parsed but do not select distinct implementations in v0.1.0.
+
+## When to use each
+
+| Pattern | Index helps |
+|---|---|
+| `WHERE user_id = 5` | equality (B-tree lookup, ART coordination) |
+| `WHERE ts >= … AND ts < …`, `ORDER BY ts` | range + ordering |
+| Low-cardinality `WHERE status = 'x'` | yes, but still a scan over matches |
+| `PRIMARY KEY` / `UNIQUE` | durable enforcement (B-tree authority) |
+| `LIKE '%x%'`, arbitrary expressions | no (except indexed expression form above) |
+
+## Reason about them
+
+```sql
+EXPLAIN SELECT * FROM orders WHERE user_id = 5;
+```
+
+v0.1.0 `EXPLAIN` reports `Seq Scan … (cost … rows …)` shapes; it does not expose a cost-based index-choice trace (optimizer crate is foundations only). Verify wins by measuring (`benchmark run`, `EXPLAIN ANALYZE` actual rows).
+
+## Constraints
+
+- Generation-bound lifecycle: rebuild/publish/GC go through `IndexGenerationStore`; stale generations are GC'd.
+- In-memory ART has no persistence/WAL/locks — the persistent B-tree is the authority after restart.
+
+**Reference:** [Indexes](/v0.1.0/indexes/overview) · **Next:** [Inspect a query](/v0.1.0/build/inspect-query)

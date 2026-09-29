@@ -1,0 +1,83 @@
+---
+title: CREATE TYPE and CREATE DOMAIN
+description: ENUM, composite, and domain types — full syntax, constraints, casts, and drops.
+---
+
+# CREATE TYPE and CREATE DOMAIN
+
+<Check>**Supported.** User OIDs assigned from 16384; labels and attributes stored in the catalog.</Check>
+
+## CREATE TYPE AS ENUM
+
+```text
+CREATE TYPE name AS ENUM ('label' [, ...])
+```
+
+<Steps>
+<Step title="Create">
+```sql
+CREATE TYPE employee_status AS ENUM ('active', 'on_leave', 'terminated');
+```
+</Step>
+<Step title="Use as column">
+```sql
+CREATE TABLE staff (id BIGINT PRIMARY KEY, status employee_status NOT NULL DEFAULT 'active');
+INSERT INTO staff VALUES (1, 'active'), (2, 'on_leave');
+```
+</Step>
+<Step title="Query">
+```sql
+SELECT * FROM staff WHERE status = 'active' ORDER BY id;
+SELECT enum_range(NULL::employee_status);
+```
+</Step>
+</Steps>
+
+**Behavior:** user OID assigned from `FIRST_USER_OID=16384`; labels stored in catalog; comparison is label-order; invalid label on insert → error. `DROP TYPE [IF EXISTS] name [CASCADE|RESTRICT]`.
+
+## CREATE TYPE AS COMPOSITE
+
+```text
+CREATE TYPE name AS (col TYPE [, ...])
+```
+
+```sql
+CREATE TYPE address_type AS (street TEXT, city TEXT, zip TEXT);
+CREATE TABLE customers (id BIGINT PRIMARY KEY, addr address_type);
+INSERT INTO customers VALUES (1, ROW('5 Main', 'Springfield', '12345'));
+SELECT (addr).city FROM customers;
+SELECT json_person FROM ...;  -- see tests § composite
+```
+
+`attributes: Some([...])` in AST; `None` = enum, `Some([])` = standalone composite without columns. `(record).field` access works in expressions.
+
+## CREATE DOMAIN
+
+```text
+CREATE DOMAIN name AS base_type [CONSTRAINT cname CHECK (expr)] [CHECK (expr) ...]
+```
+
+```sql
+CREATE DOMAIN positive_integer AS integer CONSTRAINT positive CHECK (VALUE > 0);
+CREATE DOMAIN email AS TEXT CHECK (VALUE LIKE '%@%');
+CREATE TABLE t (id positive_integer PRIMARY KEY, contact email);
+INSERT INTO t VALUES (1, 'a@b.com');       -- ok
+INSERT INTO t VALUES (-1, 'a@b.com');      -- CHECK violation
+INSERT INTO t VALUES (2, 'nope');          -- CHECK violation
+DROP DOMAIN [IF EXISTS] positive_integer [CASCADE|RESTRICT];
+```
+
+`VALUE` keyword is the domain input reference (also usable as column name elsewhere). Multiple `CHECK`s all enforced. Domains carry `base, typmod, not_null` in `Domain{...}` registry entry.
+
+## Casts and typmod
+
+```sql
+SELECT 'active'::employee_status, CAST('5' AS positive_integer);
+SELECT 'x'::VARCHAR(10), '1.5'::NUMERIC(12,2);
+```
+
+`can_be_column_type()` gates pseudo-types; `record` only via `ROW(...)`.
+
+## Related
+
+[Types](/v0.1.0/data/types) · [ENUM/DOMAIN deep dive](/v0.1.0/data/enums-domains) · [Constraints](/v0.1.0/data/constraints)

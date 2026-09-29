@@ -1,0 +1,57 @@
+---
+title: JSON edge cases
+description: Negative indexes, escape matrix, numeric extremes, invalid-JSON error handling.
+---
+
+# JSON edge cases
+
+## Scalar literal matrix
+
+```sql
+SELECT 'null'::json, 'true'::json, '123'::json, '-123.456'::json, '1e10'::json, '"hello"'::json;
+SELECT 'null'::jsonb, '1e-100'::jsonb, '-1e100'::jsonb;
+SELECT jsonb_typeof('[]'::jsonb), jsonb_typeof('{}'::jsonb);  -- array | object
+```
+
+## Negative array indexes
+
+```sql
+SELECT '[10,20,30]'::jsonb -> 0;    -- 10
+SELECT '[10,20,30]'::jsonb -> -1;   -- 30 (from the end)
+SELECT '[10,20,30]'::jsonb ->> -1;  -- '30'
+SELECT '[10,20,30]'::jsonb #> '{-1}';
+SELECT '{"a":{"b":[{"c":42}]}}'::jsonb #>> '{a,b,0,c}';  -- '42'
+```
+
+## Escape matrix
+
+```sql
+SELECT '"quote: \"hello\""'::jsonb, '"slash: \/"'::jsonb, '"tab: \t"'::jsonb;
+SELECT E'"unicode: \\u0041"'::jsonb;   -- "A", incl. surrogate pairs \uD83D\uDE00
+```
+
+## Numeric extremes
+
+```sql
+SELECT '1.0000000000000000000000001'::jsonb, '1e100'::jsonb;
+SELECT '999999999999999999999999999999999999999999'::jsonb;
+```
+
+## Invalid JSON — catch it with DO/EXCEPTION
+
+```sql
+DO $$
+BEGIN
+  PERFORM '"bad: \q"'::jsonb;
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'EXPECTED INVALID ESCAPE: %', SQLERRM;
+END $$;
+```
+
+Invalid escapes, short `\u12` sequences, and malformed numbers raise — never silently coerce. Wrap ingestion casts in `DO … EXCEPTION` or validate with `IS JSON` first:
+
+```sql
+SELECT payload FROM events WHERE payload IS JSON;
+```
+
+**Related:** [Operators](/v0.1.0/json/operators) · [Functions](/v0.1.0/json/functions) · [NULL](/v0.1.0/sql/null-semantics)

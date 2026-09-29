@@ -1,0 +1,54 @@
+---
+title: Work with time-series data
+description: Model events, query time windows, aggregate, and combine time with relational + JSON data.
+---
+
+# Work with time-series data
+
+**Status:** Supported as temporal types + SQL operations. There is **no dedicated time-series engine** in v0.1.0 (no continuous aggregates, retention, or downsampling). Columnar `DeltaBitpack`/`Rle` encodings target timestamp columns internally.
+
+## Model events
+
+```sql
+CREATE TABLE events (
+  id  BIGINT PRIMARY KEY,
+  ts  TIMESTAMPTZ NOT NULL,
+  kind TEXT NOT NULL,
+  payload JSONB
+);
+CREATE INDEX events_ts_idx ON events (ts);
+INSERT INTO events VALUES (1, now(), 'click', '{"page": "/"}');
+```
+
+Literals: `DATE '2026-01-01'`, `TIMESTAMP '2026-01-01 12:00:00'`, `TIMESTAMPTZ '…'`, `INTERVAL '7 days'`; precision `TIME(p)`/`TIMESTAMP(p)` with `0<=p<=6`. Clock functions `now()`, `current_date/time/timestamp` are statement-clock stable.
+
+## Query windows
+
+```sql
+SELECT * FROM events
+WHERE ts >= now() - INTERVAL '1 hour' AND ts < now()
+ORDER BY ts DESC LIMIT 100;
+```
+
+Arithmetic (verified in `crates/executor/src/query/compare.rs`): `date ± int → date`, `date ± interval → timestamp`, `ts ± interval → ts`, `date − date → int days`, `ts − ts → interval`.
+
+## Extract and truncate
+
+```sql
+SELECT EXTRACT(hour FROM ts), date_trunc('day', ts), date_part('dow', ts),
+       make_date(2026,1,1), make_timestamp(2026,1,1,12,0,0), age(now(), ts)
+FROM events LIMIT 5;
+```
+
+`EXTRACT` fields: year, month, day, quarter, dow, isodow, doy, hour, minute, second, milliseconds, microseconds, century, decade.
+
+## Combine with relational + JSON
+
+```sql
+SELECT date_trunc('hour', e.ts) AS h, count(*), count(*) FILTER (WHERE e.payload @> '{"ok": true}')
+FROM events e JOIN users u ON u.id = (e.payload->>'user_id')::bigint
+WHERE e.ts >= now() - INTERVAL '7 days'
+GROUP BY 1 ORDER BY 1;
+```
+
+**Next:** [Temporal reference](/v0.1.0/data/temporal) · [Indexes](/v0.1.0/indexes/overview)

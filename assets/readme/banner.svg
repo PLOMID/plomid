@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1910 320" role="img" aria-labelledby="bnT bnD">
+  <title id="bnT">PLOMID, Platform for Modern Intelligence and Data</title>
+  <desc id="bnD">One data layer for rows, documents and time-ordered events. A PostgreSQL-wire-compatible universal database platform written in Rust.</desc>
+  <defs>
+    <linearGradient id="cu" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e2683c"/>
+      <stop offset="1" stop-color="#f0925f"/>
+    </linearGradient>
+    <linearGradient id="seam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e2683c" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#f0925f"/>
+      <stop offset="1" stop-color="#e2683c" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ink surface -->
+  <rect width="1910" height="320" fill="#08090b"/>
+
+  <!-- engineering grid: vertical hairlines -->
+  <g stroke="#ffffff" stroke-opacity="0.045" stroke-width="1">
+    <line x1="118.75" y1="0" x2="118.75" y2="320"/>
+    <line x1="237.5"  y1="0" x2="237.5"  y2="320"/>
+    <line x1="356.25" y1="0" x2="356.25" y2="320"/>
+    <line x1="475"    y1="0" x2="475"    y2="320"/>
+    <line x1="593.75" y1="0" x2="593.75" y2="320"/>
+    <line x1="712.5"  y1="0" x2="712.5"  y2="320"/>
+    <line x1="831.25" y1="0" x2="831.25" y2="320"/>
+    <line x1="950"    y1="0" x2="950"    y2="320"/>
+    <line x1="1068.75" y1="0" x2="1068.75" y2="320"/>
+    <line x1="1187.5" y1="0" x2="1187.5" y2="320"/>
+    <line x1="1306.25" y1="0" x2="1306.25" y2="320"/>
+    <line x1="1425"   y1="0" x2="1425"   y2="320"/>
+    <line x1="1543.75" y1="0" x2="1543.75" y2="320"/>
+    <line x1="1662.5" y1="0" x2="1662.5" y2="320"/>
+    <line x1="1781.25" y1="0" x2="1781.25" y2="320"/>
+  </g>
+
+  <!-- the seam: one copper rule on the top edge -->
+  <rect x="0" y="0" width="1910" height="3" fill="url(#seam)"/>
+
+  <!-- PLOMID horizontal lockup, outline geometry from assets/plomid-lockup-ink-outline.svg -->
+  <g transform="translate(406 86) scale(0.58)" fill-rule="evenodd">
+    <g transform="scale(0.2472) translate(-621 -269)">
+      <path d="M 1023 269 L 693 465 L 621 510 L 621 1055 L 817 1175 L 817 627 L 1009 514 L 1019 510 L 1210 629 L 1210 713 L 1008 835 L 1008 1061 L 1260 916 L 1409 827 L 1409 509 Z"
+            fill="none" stroke="url(#cu)" stroke-width="24" stroke-linejoin="miter" stroke-linecap="butt"/>
+    </g>
+    <g transform="translate(49 -1386)">
+      <path d="M 202 1608 L 216 1610 L 244 1609 L 244 1531 L 246 1529 L 380 1529 L 402 1527 L 437 1495 L 437 1418 L 401 1386 L 203 1386 L 203 1429 L 387 1429 L 395 1436 L 395 1476 L 385 1486 L 230 1487 L 202 1508 Z"
+            fill="none" stroke="#f2f2ef" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"/>
+      <path d="M 515 1386 L 514 1609 L 721 1609 L 721 1568 L 556 1567 L 555 1387 Z"
+            fill="none" stroke="#f2f2ef" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"/>
+      <path d="M 841 1386 L 780 1449 L 781 1549 L 841 1609 L 992 1610 L 1054 1548 L 1053 1447 L 992 1386 Z M 822 1465 L 857 1429 L 978 1429 L 1012 1465 L 1012 1532 L 977 1568 L 857 1568 L 822 1532 Z"
+            fill="none" stroke="#f2f2ef" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"/>
+      <path d="M 1127 1387 L 1127 1610 L 1169 1608 L 1170 1459 L 1264 1539 L 1356 1458 L 1358 1460 L 1358 1609 L 1399 1609 L 1400 1391 L 1398 1386 L 1366 1386 L 1264 1480 L 1161 1386 Z"
+            fill="none" stroke="#f2f2ef" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"/>
+      <path d="M 1478 1386 L 1476 1388 L 1476 1608 L 1485 1610 L 1518 1609 L 1518 1387 Z"
+            fill="none" stroke="#f2f2ef" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"/>
+      <path d="M 1597 1387 L 1598 1429 L 1781 1429 L 1802 1451 L 1802 1545 L 1780 1568 L 1641 1568 L 1639 1566 L 1639 1462 L 1597 1462 L 1598 1609 L 1797 1609 L 1844 1562 L 1845 1436 L 1797 1386 Z"
+            fill="none" stroke="#f2f2ef" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"/>
+    </g>
+  </g>
+
+  <!-- tagline -->
+  <text x="955" y="253" text-anchor="middle" font-family="'IBM Plex Mono','SFMono-Regular',Menlo,monospace" font-size="16" font-weight="500" letter-spacing="7" fill="#a0a6ae">PLATFORM FOR MODERN INTELLIGENCE AND DATA</text>
+
+  <!-- status badges -->
+  <g font-family="'IBM Plex Mono','SFMono-Regular',Menlo,monospace" font-size="12" letter-spacing="2">
+    <rect x="604" y="272" width="92"  height="26" rx="13" fill="#0c0e11" stroke="rgba(255,255,255,0.20)"/>
+    <circle cx="621" cy="285" r="3.5" fill="#e2683c"/>
+    <text x="632" y="289.5" fill="#a0a6ae">RUST</text>
+
+    <rect x="710" y="272" width="136" height="26" rx="13" fill="#0c0e11" stroke="rgba(255,255,255,0.20)"/>
+    <circle cx="727" cy="285" r="3.5" fill="#e2683c"/>
+    <text x="738" y="289.5" fill="#a0a6ae">APACHE-2.0</text>
+
+    <rect x="860" y="272" width="266" height="26" rx="13" fill="#0c0e11" stroke="rgba(255,255,255,0.20)"/>
+    <circle cx="877" cy="285" r="3.5" fill="#e2683c"/>
+    <text x="888" y="289.5" fill="#a0a6ae">POSTGRES WIRE COMPATIBLE</text>
+
+    <rect x="1140" y="272" width="166" height="26" rx="13" fill="#0c0e11" stroke="rgba(255,255,255,0.20)"/>
+    <circle cx="1157" cy="285" r="3.5" fill="#e2683c"/>
+    <text x="1168" y="289.5" fill="#a0a6ae">v0.1.0-beta.1</text>
+  </g>
+
+  <!-- corner ticks -->
+  <g stroke="#e2683c" stroke-width="2" fill="none" opacity="0.9">
+    <path d="M 24 36 L 24 24 L 36 24"/>
+    <path d="M 1874 24 L 1886 24 L 1886 36"/>
+    <path d="M 24 284 L 24 296 L 36 296"/>
+    <path d="M 1874 296 L 1886 296 L 1886 284"/>
+  </g>
+</svg>

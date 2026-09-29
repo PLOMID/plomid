@@ -1,0 +1,9 @@
+# 
+# © 2026 PLOMID Technology Solutions
+# PLOMID — Platform for Modern Intelligence and Data
+# Author: Sainath Sapa
+# GitHub: https://github.com/sainathsapa
+[toolchain]
+channel = "stable"
+profile = "minimal"
+components = ["rustfmt", "clippy"]

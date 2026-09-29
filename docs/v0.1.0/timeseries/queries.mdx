@@ -1,0 +1,63 @@
+---
+title: Time-series queries
+description: Windows, rollups, multi-dimensional splits, gap-filling, feeds, and retention recipes.
+---
+
+# Time-series queries
+
+## Windows
+
+```sql
+SELECT * FROM events WHERE ts >= now() - INTERVAL '1 hour' AND ts < now() ORDER BY ts DESC LIMIT 100;
+SELECT * FROM events WHERE ts BETWEEN '2026-01-01' AND '2026-02-01' ORDER BY ts;
+```
+
+## Rollups
+
+```sql
+SELECT date_trunc('hour', ts) h, count(*), avg((payload->>'v')::numeric) FROM events
+WHERE ts >= now() - INTERVAL '7 days' GROUP BY 1 ORDER BY 1;
+SELECT date_trunc('day', ts) d, kind, count(*) FROM events GROUP BY 1, 2 ORDER BY 1, 2;
+SELECT count(*) FILTER (WHERE payload @> '{"ok": true}'),
+       count(*) FILTER (WHERE payload @> '{"ok": false}') FROM events
+WHERE ts >= now() - INTERVAL '1 day';
+```
+
+## Gap-filling with generate_series
+
+```sql
+WITH hours AS (SELECT generate_series(
+  date_trunc('hour', now() - INTERVAL '24 hours'),
+  date_trunc('hour', now()), INTERVAL '1 hour') AS h)
+SELECT hours.h, count(e.id) FROM hours
+LEFT JOIN events e ON date_trunc('hour', e.ts) = hours.h
+GROUP BY 1 ORDER BY 1;
+```
+
+## Feeds (keyset)
+
+```sql
+SELECT * FROM events ORDER BY ts DESC, id DESC LIMIT 50;
+SELECT * FROM events WHERE (ts, id) < ('2026-01-02T00:00Z', 500) ORDER BY ts DESC, id DESC LIMIT 50;
+```
+
+## Retention (manual)
+
+```sql
+DELETE FROM events WHERE ts < now() - INTERVAL '90 days' RETURNING count(*);
+-- or partition by month table + DROP/TRUNCATE old partitions
+```
+
+## Bulk-seed a time series (generate_series + dynamic intervals)
+
+```sql
+INSERT INTO events (id, ts, kind, payload)
+SELECT g, '2026-07-01 08:00:00'::timestamp + (g || ' minutes')::interval,
+  CASE WHEN g % 5 = 0 THEN 'error' ELSE 'click' END,
+  json_build_object('seq', g)::jsonb
+FROM generate_series(1, 10000) AS g;
+```
+
+`(g || ' minutes')::interval` builds per-row offsets from string concatenation — the standard seeding idiom (see [e-commerce bulk load](/v0.1.0/cookbook/ecommerce)).
+
+**Related:** [Temporal](/v0.1.0/data/temporal) · [Performance](/v0.1.0/operations/performance)

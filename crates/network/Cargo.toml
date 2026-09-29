@@ -1,0 +1,26 @@
+[package]
+name = "plomid-network"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Server protocol and session transport foundations for PLOMID."
+
+[dependencies]
+plomid-core = { workspace = true }
+plomid-executor = { workspace = true }
+plomid-sql = { workspace = true }
+plomid-txn = { workspace = true }
+plomid-types = { workspace = true }
+tracing = "0.1"
+tokio = { version = "1", features = ["net", "io-util", "rt", "rt-multi-thread", "macros", "sync", "time"] }
+bytes = "1"
+
+[lib]
+path = "src/lib.rs"
+
+[lints]
+workspace = true

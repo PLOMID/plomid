@@ -1,0 +1,46 @@
+---
+title: Functions
+description: Scalar, temporal, array, JSON, session, catalog, and set-returning functions.
+---
+
+# Functions
+
+Dispatch: `scalar_function_value_extended` tries `plomid_types::builtin_functions()` then executor match arms (`crates/executor/src/scalar.rs`, `catalog_fn.rs`). `is_scalar_function()` gate lists availability.
+
+## String
+
+`lower upper length char_length character_length trim btrim ltrim rtrim substring substr concat concat_ws replace left right reverse position regexp_replace regexp_match regexp_matches regexp_substr format('%s|%I|%L')`
+
+```sql
+SELECT upper(name), substring(name FROM 1 FOR 2), concat_ws(', ', city, country) FROM users;
+```
+
+## Math
+
+`abs round floor ceil ceiling power pow sqrt mod pi random sin cos tan ln log exp greatest least`
+
+## Date/time
+
+`date_part date_trunc age make_date make_timestamp EXTRACT` — see [Temporal](/v0.1.0/data/temporal).
+
+```sql
+SELECT date_trunc('month', placed_at), EXTRACT(dow FROM placed_at) FROM orders;
+```
+
+## Array
+
+`array_length cardinality append prepend cat position to_string string_to_array unnest array[…]`; `arr[i]` 1-based.
+
+## JSON
+
+`json json_scalar json_object(b) json_array(b) json_value query serialize jsonb_build_object json_build_object/array jsonb_set jsonb_set_lax jsonb_insert jsonb_strip_nulls jsonb_typeof jsonb_extract_path(_text) jsonb_array_elements(_text) jsonb_object_keys jsonb_each(_text) jsonb_pretty jsonb_delete_path jsonb_path_query* row_to_json to_json(b)` — see [JSON](/v0.1.0/data/json).
+
+## Session / clock (also bare column refs, statement-stable)
+
+`version() current_database current_schema current_user session_user pg_backend_pid current_date current_time current_timestamp now`
+
+## Catalog / sequences / SRF
+
+`pg_get_constraintdef pg_get_indexdef to_regclass to_regnamespace nextval currval generate_series(int,int[,int]) unnest json*_array_elements json*_object_keys json*_each` — table-function SRFs usable in `FROM` (incl. `WITH ORDINALITY`).
+
+No vector-distance operators in v0.1.0 (`query/vector.rs` is columnar COUNT/SUM/AVG/MIN/MAX planning, not pgvector).

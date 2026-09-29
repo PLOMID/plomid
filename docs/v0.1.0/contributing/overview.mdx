@@ -1,0 +1,35 @@
+---
+title: Contributing to PLOMID
+description: Build, test, review, and extend the engine — derived from the repo, not invented.
+---
+
+# Contributing to PLOMID
+
+## Local development (required gates)
+
+```sh
+cargo build --workspace
+cargo fmt --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo deny check
+```
+
+Install `cargo-deny`. CI runs the same gates plus license/advisory/source policy.
+
+## Pull requests
+
+- One task per PR; preserve roadmap dependency order.
+- Tests for behavior changes; storage/WAL/recovery/MVCC/txn changes need correctness + failure-path coverage.
+- Public API/architecture changes need docs; material design decisions need an ADR (`docs/adr/` convention per `CONTRIBUTING.md`).
+- State validation, limitations, follow-ups. No secrets or forbidden engine foundations. Review via `CODEOWNERS`.
+
+## Adding SQL functionality
+
+Parser (`crates/sql/src/parser/*` + `ast.rs`) → executor (`query/*`, `join/*`, `scalar.rs`, `dml.rs`) → tests in `tests/*.sql` + `crates/*/tests`. Update [Compatibility](/v0.1.0/sql/compatibility) status and add cookbook examples. See [Repo structure](/v0.1.0/contributing/repo-structure).
+
+## Adding storage functionality
+
+`crates/storage` (layout/manager/row/btree/buffer/checksum/catalog) + `crates/wal` (format/recovery) + `crates/txn`/`mvcc` → lifecycle mount/demount coverage (`crates/lifecycle/tests`) + corruption/replay tests. Document as **Internal** unless promoted to a developer contract.
+
+**Structure:** [Repo structure](/v0.1.0/contributing/repo-structure)

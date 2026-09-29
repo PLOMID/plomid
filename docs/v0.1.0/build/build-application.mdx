@@ -1,0 +1,63 @@
+---
+title: Build an application on PLOMID
+description: Connect, query, transact, and handle errors from application code over the PG wire protocol.
+---
+
+# Build an application
+
+Any PostgreSQL client works — PLOMID speaks PG Frontend/Backend v3 natively. No plugins.
+
+```mermaid
+flowchart TB
+    subgraph App["your application"]
+        DRV["PG driver\n(psycopg / pg / JDBC)"]
+        POOL["your connection pool"]
+        DRV --- POOL
+    end
+    App -->|"postgresql://user:pass@host:5432/db"| SRV["plomid-server\nport 5432"]
+    SRV --> ENG["engine: SQL → MVCC → storage"]
+    ENG --> DISK["./data\nWAL + checkpoints"]
+```
+
+## Python (psycopg)
+
+```python
+import psycopg
+conn = psycopg.connect("postgresql://plomid:secret@127.0.0.1:5432/plomid", autocommit=True)
+with conn.cursor() as cur:
+    cur.execute("SELECT id, name FROM users WHERE id = %s", (1,))
+    print(cur.fetchall())
+# transaction:
+with conn.transaction():
+    with conn.cursor() as cur:
+        cur.execute("INSERT INTO orders VALUES (%s, %s, %s, now())", (201, 1, 19.99))
+```
+
+## Node (pg)
+
+```js
+import { Client } from "pg";
+const c = new Client({ connectionString: "postgresql://plomid:secret@127.0.0.1:5432/plomid" });
+await c.connect();
+await c.query("BEGIN");
+await c.query("INSERT INTO users VALUES ($1, $2)", [10, "grace"]);
+await c.query("COMMIT");
+await c.end();
+```
+
+Extended protocol (`Parse/Bind/Describe/Execute/Sync`, `$1` params, `WITH ORDINALITY` table funcs, `generate_series`) is implemented in `crates/network/src/server/handler.rs`. Batchable `INSERT … VALUES` without `RETURNING/ON CONFLICT` is staged across Executes and flushed as one implicit transaction at Sync.
+
+## Sessions and errors
+
+- Session params: `server_version 17.0`, `client_encoding UTF8`, `DateStyle ISO MDY`, `TimeZone UTC`, `search_path "$user",public`. SQLSTATEs map to PG codes (`28P01` auth, `08P01` protocol).
+- On error in extended mode the connection enters `InFailedTransaction` until `Sync`.
+- `pg_catalog` + `information_schema` expose live catalog rows for tool introspection (see [pg_catalog](/v0.1.0/reference/pg-catalog)).
+
+## Checklist
+
+- Use parameterized queries; never interpolate.
+- Keep transactions short; handle `Conflict` by retrying the whole transaction.
+- Handle empty results (zero rows) distinctly from NULL.
+- Pool at the app layer; server limit is `max_connections=100000` with graceful reject.
+
+**Next:** [Transactions](/v0.1.0/transactions/using-transactions) · [Errors](/v0.1.0/reference/errors)

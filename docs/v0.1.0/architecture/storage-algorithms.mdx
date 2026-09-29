@@ -1,0 +1,30 @@
+---
+title: Storage algorithms and mechanisms
+description: B-tree pages, allocation, checksums, catalog publish, columnar encoding, compaction.
+---
+
+# Storage algorithms and mechanisms
+
+<Warning>**Internal.** Public contract: [Developer storage guide](/v0.1.0/storage/developer-guide).</Warning>
+
+## On-disk B-tree (`storage/src/btree.rs`)
+
+Page0 `PLRT` root pointer; nodes `PLBT LEAF/INTERNAL`; leaf `[u16 count + klen+key+vlen+value + next]`; internal `[first + klen+key+child]`; lexicographic bytes; **byte-midpoint split**; no delete rebalance; borrowed descent; in-place leaf upsert; `replace_if_present` before active upsert across sealed/active segments.
+
+## Allocation
+
+`page_manager (PLPM)` next-PageId slots → `block_manager (PLBM)` 16-page blocks → `pack_manager (PLPK/PLPD/PLPF + BlockDirectoryEntry)` → `device/* (PLDV/PLEX)` extents with capacity reserve before file create. `round_up_to_extent`, `select_device` placement. Rotation at `is_full(segment_size)`; newest `Active`, older `Sealed` with lazily-built XOR/roaring `may_contain`.
+
+## Checksums (one primitive)
+
+CRC32C Castagnoli, KAT `0xe3069283`. Page header CRC (field zeroed) + whole-page trailer CRC. Same for pack/block/catalog `PLCT`/generation `PLGN`/checkpoint `PLCK`/WAL `PLW2`/columnar/chunk/`PLRB`/`PLXF`/`PLWS`. Trailing bytes, non-zero reserved, version mismatch → reject. Failure → `ErrorKind::Corruption`.
+
+## Catalog publish
+
+Immutable `CatalogState` sorted by `ObjectId`; staged `.tmp` + atomic rename + dir fsync; discovery ignores non-canonical names; `latest_valid_catalog` skips corrupt; `load_catalog_for_version` fails closed; `CURRENT` authoritative.
+
+## Columnar + compaction
+
+`PLCS` segments → `PLCC` chunks (~16 MiB) → `PLCE` frames (`Raw|Rle|DeltaBitpack|Dictionary`, `Auto` smallest-wins); `Zstd` gated. `materialization → flush (encode+stats+BRIN) → store → lazy decode`. `compaction.rs` merges; `vector.rs` plans columnar COUNT/SUM/AVG/MIN/MAX (not pgvector).
+
+**Related:** [Engine internals](/v0.1.0/storage/engine-internals) · [WAL/recovery](/v0.1.0/storage/wal-checkpoints-recovery)

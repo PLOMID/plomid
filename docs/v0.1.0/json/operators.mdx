@@ -1,0 +1,59 @@
+---
+title: JSON operators
+description: Complete operator reference — navigation, path, containment, and mutation operators.
+---
+
+# JSON operators
+
+Parsed at multiplicative level (`expressions.rs`); evaluated in `compare.rs` / `ops.rs`.
+
+## Navigation
+
+| Op | Name | Returns | Example |
+|---|---|---|---|
+| `->` | arrow | JSON | `payload->'user'` → `{"name":"ada"}` |
+| `->>` | arrow-text | text | `payload->>'name'` → `ada` |
+| `#>` | path | JSON | `payload#>'{user,name}'` |
+| `#>>` | path-text | text | `payload#>>'{user,name}'` |
+| `#-` | delete-path | jsonb | `payload #- '{user,temp}'` |
+| `arr[i]` | subscript | element | `payload['tags'][1]`, 1-based |
+| `(r).f` | row field | value | `(addr).city` |
+
+```sql
+SELECT payload->'user', payload->>'user', payload#>'{a,b}', payload#>>'{a,b}',
+       payload #- '{tmp}', arr[1], (r).f FROM t;
+```
+
+## Containment and existence
+
+| Op | Function lowered to | Meaning |
+|---|---|---|
+| `@>` | `json_contains` | left contains right |
+| `<@` | `contained_by` | left contained in right |
+| `?` | `exists` | key exists |
+| `?\|` | `exists_any` | any key exists |
+| `?-inner` | `exists_all` | all keys exist |
+| `@?` | `jsonb_path_exists_op` | path predicate matches |
+| `@@` | `match_op` | path match |
+
+```sql
+SELECT * FROM events WHERE payload @> '{"ok": true}';
+SELECT * FROM events WHERE payload ? 'user';
+SELECT * FROM events WHERE payload ?| ARRAY['a','b'];
+SELECT * FROM events WHERE payload @? '$.user.name ? (@ starts with "a")';
+```
+
+## Mutation operator
+
+```sql
+SELECT payload - 'temp' FROM events;        -- drop key
+SELECT payload - 1 FROM events;             -- drop array index
+SELECT payload - ARRAY['a','b'] FROM events; -- drop keys
+SELECT payload || '{"c": 1}' FROM events;   -- concat (objects merge, arrays concat, - sorts)
+```
+
+`-` lowers to `jsonb_subtract`; `||` to `jsonb_concat`.
+
+## NULL / missing
+
+Any navigation on missing field → NULL. Containment on NULL → NULL (row filtered). See [NULL](/v0.1.0/sql/null-semantics).

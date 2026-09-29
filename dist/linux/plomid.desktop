@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PLOMID
+GenericName=Database server
+Comment=PLOMID enterprise universal database platform (PostgreSQL wire protocol). Docs: https://plomid.in/
+Exec=/usr/local/bin/plomid-server --data /var/lib/plomid/data --host 127.0.0.1 --port 5432
+Icon=plomid
+Terminal=true
+Categories=Development;Database;
+StartupNotify=false

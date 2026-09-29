@@ -1,0 +1,34 @@
+[package]
+name = "plomid-columnar"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Immutable columnar segments for analytical workloads on PLOMID."
+
+[dependencies]
+plomid-core = { workspace = true }
+plomid-storage = { workspace = true }
+plomid-sql = { workspace = true }
+plomid-txn = { workspace = true }
+plomid-mvcc = { workspace = true }
+crc32c = { workspace = true }
+
+# ZSTD compression (optional - used when feature is enabled)
+zstd = { version = "0.13", optional = true }
+
+[dev-dependencies]
+plomid-txn = { workspace = true }
+
+[[bench]]
+name = "flush_pipeline"
+harness = false
+
+[features]
+default = []
+zstd = ["dep:zstd"]
+
+[lints]
+workspace = true

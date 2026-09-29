@@ -1,0 +1,28 @@
+---
+title: Configuration reference
+description: Dense table of every v0.1.0 option.
+---
+
+# Configuration reference
+
+See [Configuration](/v0.1.0/operations/configuration) for grouped guidance. This page is the dense lookup.
+
+| Name | Flag | Env | Type | Default | Required | Valid | Behavior |
+|---|---|---|---|---|---|---|---|
+| host | `--host/-H` | `PLOMID_HOST` | addr | `127.0.0.1` | no | IP/hostname | bind; remote needs TLS or opt-in |
+| port | `--port/-p` | `PLOMID_PORT` | u16 | `5432` | no | 1–65535 | |
+| data dir | `--data/-D` | `PLOMID_DATA_DIR` | path | `./data` | no | dir | created |
+| username | `--username/-U` | `PLOMID_USER` | string | `plomid` | no | non-empty | auth identity |
+| password | `--password/-W` | `PLOMID_PASSWORD` | string | `plomid` server / `secret` CLI+start.sh | yes in practice | secret | never logged |
+| log level | `--log-level` | `PLOMID_LOG_LEVEL`/`RUST_LOG` | enum | `info` | no | trace/debug/info/warn/error | |
+| auth | `--auth` | `PLOMID_AUTH` | enum | `scram` | no | scram/password/md5/none | `none` loopback only |
+| tls | `--tls` | — | flag | off | no | — | needs cert+key; handshake declined in v0.1.0 |
+| tls cert/key | `--tls-cert/--tls-key` | `PLOMID_TLS_CERT/KEY` | path | `""` | with `--tls` | file | empty → exit 1 |
+| tls required | `--tls-required` | — | flag | off | no | — | w/o `--tls` → error |
+| WAL bytes | `--checkpoint-wal-bytes` | `PLOMID_CHECKPOINT_WAL_BYTES` | bytes | `67108864` | no | u64, 0=off | |
+| segments | `--checkpoint-segments` | `PLOMID_CHECKPOINT_SEGMENTS` | u64 | `16` | no | 0=off | |
+| interval | `--checkpoint-interval-secs` | `PLOMID_CHECKPOINT_INTERVAL_SECS` | secs | `900` | no | 0=off | |
+| remote plaintext | `--allow-remote-plaintext` | `PLOMID_ALLOW_INSECURE_REMOTE` | flag | off | remote w/o TLS | — | explicit opt-in |
+| no auto ckpt | `--no-auto-checkpoint` | — | flag | off | no | — | disables policy |
+
+Engine: `pool_capacity 1024`, `segment 8 MiB`, `WAL segment 8 MiB`, `max_connections 100000`.

@@ -1,0 +1,30 @@
+[package]
+name = "plomid-txn"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Transaction lifecycle and locking foundations for PLOMID."
+
+[dependencies]
+plomid-core = { workspace = true }
+plomid-mvcc = { workspace = true }
+plomid-wal = { workspace = true }
+plomid-storage = { workspace = true }
+tracing = "0.1"
+
+[lib]
+path = "src/lib.rs"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "hot_row_store"
+harness = false
+
+[lints]
+workspace = true

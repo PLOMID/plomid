@@ -1,0 +1,26 @@
+---
+title: Query pipeline — SQL to rows
+description: Parse, execute, transact, index, store — with file pointers.
+---
+
+# Query pipeline
+
+```mermaid
+flowchart LR
+    SQL["SQL text"] --> Lex["lexer.rs: tokens"]
+    Lex --> Parse["parser/*: Statement + Expression AST"]
+    Parse --> Exec["executor.rs: execute/execute_all + DDL/DML/transaction dispatch"]
+    Exec --> Q["query/*: select/expr/compare/aggregate/explain + scan/project/group"]
+    Exec --> J["join/*: statement/plan/eval/scope + set ops + CTEs + windows"]
+    Q --> S["scalar.rs + catalog_fn.rs functions"]
+    J --> T["txn + mvcc snapshot reads + lane gates"]
+    T --> I["index B-tree/ART lookups"]
+    T --> ST["storage get/scan + columnar prune + filters"]
+```
+
+- SQL → `Parser::new(tokens, catalog).parse_statements()` (multi-word types, `TYPE[]`, `(n,m)` preserved).
+- No cost planner: `crates/optimizer` is foundations-only; `EXPLAIN` describes shapes.
+- Reads resolve version store under caller snapshot + pending overlay; `versions_complete` gates bootstrap fallback; `SCAN_CHUNK_ROWS=1024` paging.
+- Writes: WAL batch → group fsync → pages → publish versions ([Behavior contracts](/v0.1.0/transactions/behavior-contracts)).
+
+**How-tos:** [How SELECT/INSERT/transaction/recovery work](/v0.1.0/architecture/how-it-works).

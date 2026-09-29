@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="470" viewBox="0 0 1560 470" role="img" aria-labelledby="ppT ppD">
+  <title id="ppT">The PLOMID pipeline</title>
+  <desc id="ppD">A SQL statement travels from the client through the network layer, parser, binder, planner and executor, and through MVCC to storage: the write-ahead log, storage engines and indexes, before results travel back to the client.</desc>
+  <defs>
+    <linearGradient id="pcu" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e2683c"/>
+      <stop offset="1" stop-color="#f0925f"/>
+    </linearGradient>
+    <pattern id="phatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(10,11,13,0.10)" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+
+  <!-- paper surface -->
+  <rect width="1560" height="470" fill="#f3f1ec"/>
+
+  <!-- plate label -->
+  <text x="24" y="30" font-family="'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace" font-size="10" letter-spacing="3" fill="#83888f">PLOMID · THE PIPELINE — ONE STATEMENT, ONE PATH</text>
+
+  <!-- client -->
+  <rect x="24" y="90" width="180" height="110" rx="2" fill="#e9e6df" stroke="rgba(10,11,13,0.12)"/>
+  <text x="114" y="140" text-anchor="middle" font-family="'Inter',-apple-system,'Segoe UI',system-ui,sans-serif" font-size="14" font-weight="600" fill="#0a0b0d">Client</text>
+  <text x="114" y="160" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9.5" fill="#4b5057">psql · apps · CLI</text>
+
+  <!-- server boundary -->
+  <rect x="272" y="56" width="1264" height="330" rx="2" fill="none" stroke="rgba(10,11,13,0.24)" stroke-width="1"/>
+  <rect x="272" y="48" width="150" height="16" fill="#f3f1ec"/>
+  <text x="288" y="60" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="10" letter-spacing="2" fill="#b8481d">PLOMID SERVER</text>
+
+  <!-- network -->
+  <rect x="292" y="90" width="150" height="110" rx="2" fill="#f3f1ec" stroke="rgba(10,11,13,0.24)"/>
+  <text x="367" y="140" text-anchor="middle" font-family="'Inter',-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0a0b0d">Network</text>
+  <text x="367" y="160" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#83888f">pg wire v3 · sessions</text>
+
+  <!-- parser -->
+  <rect x="472" y="90" width="150" height="110" rx="2" fill="#f3f1ec" stroke="rgba(10,11,13,0.24)"/>
+  <text x="547" y="140" text-anchor="middle" font-family="'Inter',-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0a0b0d">Parser</text>
+  <text x="547" y="160" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#83888f">text → AST</text>
+
+  <!-- binder -->
+  <rect x="652" y="90" width="150" height="110" rx="2" fill="#f3f1ec" stroke="rgba(10,11,13,0.24)"/>
+  <text x="727" y="140" text-anchor="middle" font-family="Inter,-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0a0b0d">Binder</text>
+  <text x="727" y="160" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#83888f">names → catalog</text>
+
+  <!-- planner -->
+  <rect x="832" y="90" width="150" height="110" rx="2" fill="#f3f1ec" stroke="rgba(10,11,13,0.24)"/>
+  <text x="907" y="140" text-anchor="middle" font-family="Inter,-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0a0b0d">Planner</text>
+  <text x="907" y="160" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#83888f">logical → physical</text>
+
+  <!-- executor -->
+  <rect x="1012" y="90" width="150" height="110" rx="2" fill="#f3f1ec" stroke="rgba(10,11,13,0.24)"/>
+  <text x="1087" y="140" text-anchor="middle" font-family="Inter,-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0a0b0d">Executor</text>
+  <text x="1087" y="160" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#83888f">operators</text>
+
+  <!-- mvcc+txn row -->
+  <rect x="1192" y="90" width="324" height="50" rx="2" fill="#f3f1ec" stroke="rgba(10,11,13,0.24)"/>
+  <text x="1354" y="111" text-anchor="middle" font-family="Inter,-apple-system,'Segoe UI',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0a0b0d">MVCC + transactions</text>
+  <text x="1354" y="128" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="8.5" fill="#83888f">snapshots · version chains · locks</text>
+  <rect x="1192" y="150" width="324" height="50" rx="2" fill="url(#phatch)" stroke="#4b5057" stroke-dasharray="4 3"/>
+  <text x="1354" y="171" text-anchor="middle" font-family="Inter,-apple-system,'Segoe UI',system-ui,sans-serif" font-size="12" font-weight="600" fill="#4b5057">Distribution</text>
+  <text x="1354" y="188" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="8.5" fill="#83888f">design stage</text>
+
+  <!-- connectors row 1 -->
+  <g stroke="#b8481d" stroke-width="1">
+    <line x1="204" y1="145" x2="286" y2="145"/>
+    <line x1="442" y1="145" x2="466" y2="145"/>
+    <line x1="622" y1="145" x2="646" y2="145"/>
+    <line x1="802" y1="145" x2="826" y2="145"/>
+    <line x1="982" y1="145" x2="1006" y2="145"/>
+    <line x1="1162" y1="115" x2="1186" y2="115"/>
+  </g>
+  <g fill="#b8481d">
+    <polygon points="286,141 296,145 286,149"/>
+    <polygon points="466,141 476,145 466,149"/>
+    <polygon points="646,141 656,145 646,149"/>
+    <polygon points="826,141 836,145 826,149"/>
+    <polygon points="1006,141 1016,145 1006,149"/>
+    <polygon points="1186,111 1196,115 1186,119"/>
+  </g>
+  <!-- signal dot rides the first connector -->
+  <circle r="3" fill="#e2683c">
+    <animateMotion dur="4s" repeatCount="indefinite" path="M204,145 L1196,115"/>
+  </circle>
+  <circle r="3" fill="#e2683c" opacity="0.55">
+    <animateMotion dur="4s" begin="1.3s" repeatCount="indefinite" path="M204,145 L1196,115"/>
+  </circle>
+
+  <!-- verticals down to storage row -->
+  <g stroke="#b8481d" stroke-width="1">
+    <line x1="1087" y1="200" x2="1087" y2="252"/>
+    <line x1="1354" y1="200" x2="1354" y2="252"/>
+  </g>
+  <g fill="#b8481d">
+    <polygon points="1083,246 1087,256 1091,246"/>
+    <polygon points="1350,246 1354,256 1358,246"/>
+  </g>
+
+  <!-- storage row -->
+  <rect x="292" y="258" width="460" height="100" rx="2" fill="#e9e6df" stroke="rgba(10,11,13,0.24)"/>
+  <text x="522" y="288" text-anchor="middle" font-family="Inter,-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0a0b0d">Write-ahead log</text>
+  <text x="522" y="306" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#83888f">crates/wal · append · fsync · segment rotation</text>
+  <g>
+    <rect x="322" y="322" width="84" height="14" fill="rgba(10,11,13,0.12)"/>
+    <rect x="422" y="322" width="84" height="14" fill="rgba(10,11,13,0.12)"/>
+    <rect x="522" y="322" width="84" height="14" fill="rgba(10,11,13,0.12)"/>
+    <rect x="622" y="322" width="84" height="14" fill="rgba(226,104,60,0.35)"/>
+    <rect x="722" y="322" width="14" height="14" fill="#e2683c"/>
+  </g>
+
+  <rect x="782" y="258" width="380" height="100" rx="2" fill="#e9e6df" stroke="rgba(10,11,13,0.24)"/>
+  <text x="972" y="288" text-anchor="middle" font-family="Inter,-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0a0b0d">Storage engines · pages · blocks</text>
+  <text x="972" y="306" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#83888f">crates/storage · rows · documents · events</text>
+  <g>
+    <rect x="812" y="322" width="90" height="14" fill="rgba(10,11,13,0.12)"/>
+    <rect x="912" y="322" width="90" height="14" fill="rgba(10,11,13,0.12)"/>
+    <rect x="1012" y="322" width="90" height="14" fill="rgba(226,104,60,0.35)"/>
+    <rect x="1112" y="322" width="14" height="14" fill="#e2683c"/>
+  </g>
+
+  <rect x="1192" y="258" width="324" height="100" rx="2" fill="#e9e6df" stroke="rgba(10,11,13,0.24)"/>
+  <text x="1354" y="288" text-anchor="middle" font-family="Inter,-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0a0b0d">Indexes · columnar</text>
+  <text x="1354" y="306" text-anchor="middle" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" fill="#83888f">crates/index · crates/columnar</text>
+  <g>
+    <rect x="1222" y="322" width="60" height="14" fill="rgba(10,11,13,0.12)"/>
+    <rect x="1292" y="326" width="60" height="10" fill="rgba(10,11,13,0.12)"/>
+    <rect x="1362" y="330" width="60" height="6" fill="rgba(226,104,60,0.35)"/>
+    <rect x="1432" y="322" width="14" height="14" fill="#e2683c"/>
+  </g>
+
+  <!-- return path -->
+  <g fill="#83888f" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="9" letter-spacing="2">
+    <text x="60" y="330">RESULTS</text>
+    <text x="60" y="344">RETURN</text>
+  </g>
+  <path d="M 272 386 L 114 386 L 114 204" fill="none" stroke="rgba(10,11,13,0.24)" stroke-width="1"/>
+  <polygon points="110,210 114,200 118,210" fill="rgba(10,11,13,0.40)"/>
+  <!-- return signal -->
+  <circle r="2.5" fill="#b8481d" opacity="0.7">
+    <animateMotion dur="4s" begin="2.6s" repeatCount="indefinite" path="M522,362 L272,386 L114,386 L114,210"/>
+  </circle>
+
+  <!-- footnote -->
+  <text x="272" y="428" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="10.5" fill="#83888f">Every statement takes the same planning and execution path — rows, documents and events included.</text>
+</svg>

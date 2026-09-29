@@ -1,0 +1,33 @@
+---
+title: Query data
+description: Filter, sort, paginate, aggregate, and join — the working SELECT surface.
+---
+
+# Query data
+
+## Progressively
+
+```sql
+SELECT * FROM users;
+SELECT id, name FROM users WHERE id > 10 ORDER BY id LIMIT 20 OFFSET 0;
+SELECT user_id, count(*), sum(total) FROM orders GROUP BY user_id HAVING count(*) > 2;
+SELECT u.name, o.total FROM users u JOIN orders o ON o.user_id = u.id ORDER BY o.total DESC;
+```
+
+## Every corner (verified)
+
+- Targets: `*`, `t.*`, expressions, `f(args)`, window `f(...) OVER (...)`, `expr AS alias` (any keyword allowed after `AS`).
+- `FROM`: comma cross joins, `INNER/LEFT/RIGHT/FULL/CROSS JOIN … ON|USING`, parenthesised joins/subqueries/`VALUES`, table functions with `WITH ORDINALITY`, `JSON_TABLE`, `LATERAL`.
+- `WHERE`, `GROUP BY` (+`GROUPING SETS`/`ROLLUP`/`CUBE`), `HAVING`, `ORDER BY … [ASC|DESC] [NULLS FIRST|LAST]`, `LIMIT`/`OFFSET` (int literal or cast), `DISTINCT [ON …]`, `FOR UPDATE` (accepted, ignored).
+- Set ops: `UNION [ALL]`, `INTERSECT [ALL]`, `EXCEPT [ALL]` (equal arity required).
+- CTEs: `WITH [RECURSIVE] cte[(cols)] AS (…) …`.
+
+Full syntax + edge cases: [SELECT](/v0.1.0/sql/select) · [Joins](/v0.1.0/sql/joins) · [Subqueries + CTEs](/v0.1.0/sql/subqueries-cte).
+
+## Result shape
+
+`QueryResult::Rows` for queries; empty results return zero rows (not NULL, not an error). `SELECT` with no `FROM` evaluates expressions (`SELECT 1+1, now()`).
+
+## Next
+
+[Inspect a query plan](/v0.1.0/build/inspect-query) · [Complex queries](/v0.1.0/cookbook/complex-queries)

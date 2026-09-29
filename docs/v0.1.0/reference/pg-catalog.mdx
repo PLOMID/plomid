@@ -1,0 +1,20 @@
+---
+title: pg_catalog and information_schema
+description: What introspection sees — live rows tools can rely on.
+---
+
+# `pg_catalog` and `information_schema`
+
+**Status:** Supported subset (`crates/executor/src/system_catalog.rs:is_relation`, `catalog_fn.rs`, `join/expr.rs`). Rows are live from `InMemoryCatalog + database_names + current user/database` — not static fixtures.
+
+Covered relations include `pg_am pg_database pg_namespace pg_collation pg_class pg_attribute pg_attrdef pg_type pg_aggregate pg_operator pg_opclass pg_amop pg_amproc pg_cast pg_statistic pg_conversion pg_language pg_enum pg_index pg_constraint pg_description pg_shdescription pg_proc pg_roles pg_user pg_group pg_tablespace pg_settings pg_tables pg_views pg_indexes pg_auth_members pg_extension pg_replication_slots pg_stat_activity pg_stat_database …` plus `information_schema.{schemata,tables,columns,views,table_constraints,…}`.
+
+```sql
+SELECT * FROM pg_tables WHERE schemaname = 'public';
+SELECT attname, atttype FROM pg_attribute WHERE attrelid = 'users'::regclass;
+SELECT name, setting FROM pg_settings WHERE name = 'server_version';
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+SELECT version(), current_database(), current_schema(), current_user;
+```
+
+Session params (wire startup): `server_version 17.0/170000`, `server/client_encoding UTF8`, `DateStyle ISO MDY`, `TimeZone UTC`, `search_path "$user",public`. Note `SHOW server_version` / `pg_settings` report `14.0` instead — see [SHOW](/v0.1.0/sql/show-describe). Verified by the wire integration tests (psql/DBeaver-style catalog + `$1` Describe). Missing relations beyond `is_relation` error — see [Compatibility](/v0.1.0/sql/compatibility).

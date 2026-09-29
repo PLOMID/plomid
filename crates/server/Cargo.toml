@@ -1,0 +1,27 @@
+[package]
+name = "plomid-server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "PLOMID database server binary."
+
+[[bin]]
+name = "plomid-server"
+path = "src/main.rs"
+
+[dependencies]
+plomid-network = { workspace = true }
+plomid-txn = { workspace = true }
+clap = { version = "4", features = ["derive", "env"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+# `signal` powers graceful shutdown (Ctrl-C and SIGTERM); `time` bounds the
+# drain grace period.
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "signal", "time"] }
+
+[lints]
+workspace = true

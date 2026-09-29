@@ -1,0 +1,19 @@
+---
+title: Temporal data
+description: Date, time, timestamp, interval — literals, arithmetic, extraction, and windows.
+---
+
+# Temporal data
+
+Types: `date` (days since 2000-01-01), `time/timetz` (micros), `timestamp/timestamptz` (micros), `interval{months,days,micros}` (`crates/types/src/datetime.rs`).
+
+```sql
+SELECT DATE '2026-01-01', TIME '12:00:00', TIMESTAMP '2026-01-01 12:00:00',
+       TIMESTAMPTZ '2026-01-01T12:00:00Z', INTERVAL '1 year 2 mons 3 days 04:05:06';
+SELECT now(), current_date, current_time, current_timestamp, make_date(2026,1,1);
+SELECT EXTRACT(year FROM ts), date_trunc('hour', ts), date_part('dow', ts), age(now(), ts) FROM events;
+```
+
+Precision `TIME(p)/TIMESTAMP(p)`, `0<=p<=6`, else `Unsupported`. Clock functions statement-stable (`StatementContext`).
+
+Arithmetic: `date±int→date`, `date±interval→timestamp`, `ts±interval→same`, `date−date→Int4 days`, `ts−ts→Interval micros`. Time predicates participate in zone-map pruning.

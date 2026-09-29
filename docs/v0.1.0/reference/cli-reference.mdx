@@ -1,0 +1,35 @@
+---
+title: CLI reference
+description: Exact plomid commands, flags, defaults, outputs, and errors.
+---
+
+# CLI reference
+
+Binary `plomid` (`crates/cli`, `name=plomid-cli`). Global connection options (most commands): `--host` (`PLOMID_HOST`, `127.0.0.1`), `--port` (`PLOMID_PORT`, `5432`), `--user` (`PLOMID_USER`, `plomid`), `--password` (`PLOMID_PASSWORD`, `secret`, hidden), `--database` (`PLOMID_DATABASE`, `plomid`), `--data-dir` (`PLOMID_DATA_DIR`, `./data`).
+
+## `plomid server {start|stop|status}`
+
+- `start [conn]`: `create_dir_all`; pid-exists → error; locate sibling `plomid-server[.exe]`; spawn with env; write pid; `✓ PASS server started (pid N)`.
+- `stop [conn]`: read pid; Unix `kill -TERM`, else `supported on Unix hosts only`; remove pid; `✓ PASS stop signal sent`.
+- `status [conn]`: 2 s TCP connect; `✓ PASS server <addr> accepts TCP connections` or unavailable.
+
+## `plomid db {readiness|health|info|diagnostics} [--json] [conn]`
+
+- `readiness`: `SELECT 1 → 1` probe; text table + latency + `READY/NOT READY` (exit 1 if not); JSON `{status, checks[], latency_ms}`. Write/Transaction `NOT SUPPORTED`; Persistence `WARNING`.
+- `health`: + `database_bytes`; `HEALTHY/DEGRADED`; connections/memory `unavailable`.
+- `info` (local): version/platform/arch/data dir/database+WAL bytes/tables (`unavailable` when uncountable).
+- `diagnostics`: + configuration check + recommendations; errors when not ready.
+
+## `plomid config|version|logs|trace|metrics`
+
+`config` (password `configured (not displayed)`), `version` (`plomid <ver>`), `logs`/`trace` hints, `metrics [--json]` (probe latency; server counters `unavailable`).
+
+## `plomid benchmark run [--json] [conn]`
+
+`--operation select` (only), `--iterations 100`, `--concurrency 1` (≠1 errors), `--duration-seconds`, `--dataset-size` (recorded). Loops `SELECT 1` over one connection; avg/p50/p95/p99/throughput; persists `<data_dir>/benchmarks/<run-id>.json`.
+
+## `plomid test {list|run [name]}`
+
+`list`: connectivity/read/write/persistence/recovery/performance. `run`: connectivity|read → readiness; others → isolated-mode notice.
+
+WireClient: simple `Q` + `T/D/C/E/Z`, 16 MiB backend limit, 5 s timeouts. No extended/SCRAM.

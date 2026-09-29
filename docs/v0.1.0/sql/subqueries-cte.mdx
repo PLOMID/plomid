@@ -1,0 +1,25 @@
+---
+title: Subqueries and CTEs
+description: Scalar, EXISTS, IN, ANY/ALL, FROM subqueries, correlated queries, WITH RECURSIVE.
+---
+
+# Subqueries and CTEs
+
+```sql
+SELECT name FROM users WHERE id IN (SELECT user_id FROM orders);
+SELECT name FROM users WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = users.id);
+SELECT (SELECT max(total) FROM orders) AS peak;
+SELECT * FROM (SELECT id, name FROM users) AS u WHERE u.id > 5;
+SELECT * FROM (VALUES (1,'a'),(2,'b')) AS v(id, name);
+SELECT ARRAY(SELECT id FROM users ORDER BY id);
+SELECT * FROM users WHERE id = ANY (ARRAY[1,2,3]);
+WITH top AS (SELECT user_id, sum(total) s FROM orders GROUP BY user_id)
+SELECT * FROM top WHERE s > 100;
+WITH RECURSIVE fib(a,b) AS (SELECT 0,1 UNION ALL SELECT b, a+b FROM fib LIMIT 10) SELECT * FROM fib;
+```
+
+- Correlated `EXISTS` supported via `OuterContext` (`join/statement.rs`, `MAX_SUBQUERY_DEPTH` guard).
+- `INSERT…SELECT`, `UPDATE…FROM`, `DELETE…USING` materialize the subquery via the join engine first.
+- `WITH` CTEs visible as `FROM cte` (`join/plan.rs:execute_with`).
+
+**Constraint:** scalar subquery must return one value; set ops require equal arity.

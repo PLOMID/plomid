@@ -1,0 +1,18 @@
+[Unit]
+Description=PLOMID database server
+After=network.target
+
+[Service]
+Type=simple
+User=plomid
+Group=plomid
+ExecStart=/usr/local/bin/plomid-server --data /var/lib/plomid/data --host 127.0.0.1 --port 5432
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/plomid
+
+[Install]
+WantedBy=multi-user.target

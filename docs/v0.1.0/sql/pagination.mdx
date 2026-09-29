@@ -1,0 +1,17 @@
+---
+title: Pagination
+description: LIMIT/OFFSET patterns, keyset pagination, and stability notes.
+---
+
+# Pagination
+
+```sql
+-- offset pages (simple, skips rows each time)
+SELECT * FROM orders ORDER BY id LIMIT 20 OFFSET 40;
+-- keyset pages (stable under inserts; prefer for large tables)
+SELECT * FROM orders WHERE id > 120 ORDER BY id LIMIT 20;
+-- newest-first feeds
+SELECT * FROM events ORDER BY ts DESC, id DESC LIMIT 50;
+```
+
+Rules: `LIMIT`/`OFFSET` require integer literal or cast. Always pair with a deterministic `ORDER BY` (ideally unique key + tiebreaker); without it, page boundaries are unspecified. `OFFSET` cost grows with offset — keyset scales better.

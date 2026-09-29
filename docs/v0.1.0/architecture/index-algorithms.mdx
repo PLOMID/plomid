@@ -1,0 +1,35 @@
+---
+title: Index algorithms and mechanisms
+description: ART and B-tree internals — node types, splits, keys, scans, generations, GC.
+---
+
+# Index algorithms and mechanisms
+
+<Warning>**Internal.** Depend on SQL behavior ([Indexes](/v0.1.0/indexes/overview)), not these structures.</Warning>
+
+## ART (in-memory, `index/src/tree.rs node.rs leaf.rs key.rs`)
+
+- Byte-key → `RowId` set; `Unique` rejects `DuplicateKey`, `NonUnique` rejects exact dup (`AlreadyPresent`).
+- Node4/16/48/256 + path compression + terminal slot; `delete` prunes/merges/shrinks; `lookup/lookup_unique/contains/contains_row` (no visibility — caller applies MVCC); `entries()` ascending; `rebuild_from_entries` + invariant audit; `stats`.
+- Key encoding in executor (opaque here): `encode_u64_be`, `encode_i64_ordered` (sign-flip preserves order). No persistence/WAL/locks — `&mut` mutation, caller serializes.
+
+```mermaid
+flowchart LR
+    Key["SQL key"] --> Enc["executor: ordered bytes"]
+    Enc --> ART["ART lookup → RowIds"]
+    ART --> Vis["MVCC visibility filter"]
+    Vis --> Rows["rows"]
+```
+
+## Persistent B-tree (`index/src/btree/`)
+
+- 16 KiB pages + CRC + WAL replay (`ReplayTarget`); page0 `PLRT{index_id,object_id,root,generation,unique}`; `BTreeIndex::create/open`.
+- Ops: `lookup → Vec<RowId>`, `contains`, `insert → Inserted|Duplicate`, `delete(key,row_id?,all)`, `range_scan(Bound)`, `lower/upper_bound`, `first/last`, `scan_all(_reverse)`, `build_bulk(sorted)`, `sync`, `stats/entry_count`.
+- Serves: point equality, unique/PK durable authority, ordered range/prefix, min/max. `lock_unique` reservation is transient coordination only.
+- Leading-prefix scans (`index_leading_prefix`): no terminator, matches every tuple with that leading part; composite-leading + text equality served by same path (`dml.rs`, `index.rs:351`).
+
+## Generations and GC (`generation.rs`)
+
+`IndexGenerationStore → PublishedIndexGeneration → IndexGcOutcome`: rebuild/publish/GC through generation machinery; stale generations collected; B-tree remains authority after restart while ART rebuilds.
+
+**Related:** [Create an index](/v0.1.0/build/create-index) · [Storage algorithms](/v0.1.0/architecture/storage-algorithms)

@@ -1,0 +1,48 @@
+---
+title: SQL cookbook
+description: Practical recipes that teach how to think with PLOMID.
+---
+
+# SQL cookbook
+
+Each recipe: goal → query → why. All forms verified in [SQL](/v0.1.0/sql/overview).
+
+## Find / filter / sort / paginate
+
+```sql
+SELECT * FROM users WHERE name ILIKE 'a%';           -- note: case ignored single-table path
+SELECT * FROM orders WHERE total BETWEEN 10 AND 100 AND status <> 'cancelled';
+SELECT * FROM orders ORDER BY placed_at DESC NULLS LAST LIMIT 20 OFFSET 20;
+SELECT DISTINCT city FROM users;
+```
+
+## Aggregate / group
+
+```sql
+SELECT user_id, count(*), sum(total), avg(total) FROM orders GROUP BY user_id HAVING count(*) > 2;
+SELECT date_trunc('day', placed_at) d, count(*) FROM orders GROUP BY 1 ORDER BY 1;
+SELECT count(*) FILTER (WHERE total > 100) FROM orders;
+```
+
+## Join / update / delete
+
+```sql
+SELECT u.name, sum(o.total) FROM users u JOIN orders o ON o.user_id = u.id GROUP BY u.name;
+UPDATE users AS u SET name = upper(name) FROM orders o WHERE o.user_id = u.id AND o.total > 1000;
+DELETE FROM orders USING users WHERE orders.user_id = users.id AND users.status = 'deleted';
+```
+
+## JSON / time / index / transaction
+
+```sql
+SELECT * FROM events WHERE payload @> '{"ok": true}' ORDER BY ts DESC LIMIT 50;
+SELECT * FROM events WHERE ts >= now() - INTERVAL '7 days' AND payload->>'team' = 'engine';
+SELECT * FROM orders WHERE user_id = 5;              -- indexed equality
+BEGIN; INSERT INTO orders VALUES (301, 1, 9.99, now()); COMMIT;
+```
+
+**Deeper:** [Complex queries](/v0.1.0/cookbook/complex-queries) · [What to build](/v0.1.0/cookbook/what-to-build)
+
+## Flagship: production e-commerce build
+
+The [e-commerce walkthrough](/v0.1.0/cookbook/ecommerce) builds a complete order platform — domain model with composite keys, a six-table atomic order transaction, bulk seeding with `generate_series`, dashboards, `UPDATE…FROM` reconciliation, views, and anti-join integrity checks. Mined from the repo's own 10,726-line production qualification suite.

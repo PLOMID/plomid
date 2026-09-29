@@ -1,0 +1,27 @@
+---
+title: Sequences and views
+description: CREATE SEQUENCE, nextval/currval, serial columns, and views.
+---
+
+# Sequences and views
+
+## Sequences
+
+```sql
+CREATE SEQUENCE order_seq;
+SELECT nextval('order_seq'), currval('order_seq');
+CREATE TABLE t (id BIGINT DEFAULT nextval('order_seq') PRIMARY KEY);
+-- serial shorthand creates <table>_<col>_seq automatically:
+CREATE TABLE s (id SERIAL PRIMARY KEY, big BIGSERIAL, small SMALLSERIAL);
+```
+
+Sequence values dispatch through `catalog_fn.rs:sequence_value` (requires the join engine path, like `generate_series`).
+
+## Views
+
+```sql
+CREATE [OR REPLACE] VIEW active_users [(id, name)] AS SELECT id, name FROM users WHERE status = 'active';
+DROP VIEW [IF EXISTS] active_users [CASCADE|RESTRICT];
+```
+
+Views are real (re-executed `SELECT`). `MATERIALIZED VIEW` parses to a stub without materialization; `REFRESH` parses to an empty-name stub.

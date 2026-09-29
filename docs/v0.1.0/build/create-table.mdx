@@ -1,0 +1,61 @@
+---
+title: Create a table
+description: Define tables, types, constraints, and defaults that actually work in v0.1.0.
+---
+
+# Create a table
+
+**Goal:** define a table developers can insert into, query, index, and transact on.
+
+## Minimal
+
+```sql
+CREATE TABLE users (id BIGINT PRIMARY KEY, name TEXT NOT NULL);
+```
+
+## Realistic
+
+```sql
+CREATE TABLE IF NOT EXISTS orders (
+  id         BIGINT PRIMARY KEY,
+  user_id    BIGINT NOT NULL,
+  total      NUMERIC(12,2) NOT NULL DEFAULT 0.00,
+  status     TEXT NOT NULL DEFAULT 'pending',
+  payload    JSONB,
+  placed_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT positive_total CHECK (total >= 0)
+);
+```
+
+## Syntax (implemented subset)
+
+```text
+CREATE [TEMP|TEMPORARY] TABLE [IF NOT EXISTS] name (
+  col TYPE [constraints...], ...
+  [, table constraints]
+) [WITH (...)] [TABLESPACE name]
+```
+
+Source: `crates/sql/src/parser/create.rs:parse_create_table`.
+
+## What works
+
+- Types in [Types](/v0.1.0/data/types), incl. `TYPE[]` arrays (`tags TEXT[]`) and `(n[,m])` typmod; `serial`/`bigserial` create a sequence.
+- `NOT NULL`, `DEFAULT`, `UNIQUE`, `PRIMARY KEY` (column-level **and** composite table-level: `PRIMARY KEY (warehouse_id, product_id)`), `CHECK` (incl. `IN`-lists: `CHECK (status IN ('a','b'))`).
+- `REFERENCES parent(col)` parses inline and table-level to document intent, but is **not enforced** — see [e-commerce integrity checks](/v0.1.0/cookbook/ecommerce) for the anti-join replacement pattern.
+- `ALTER TABLE … RENAME TO | RENAME COLUMN | ADD COLUMN | ADD CONSTRAINT | DROP COLUMN`; `DROP TABLE [IF EXISTS] … [CASCADE|RESTRICT]`; `TRUNCATE`.
+
+## What does not
+
+- Foreign-key enforcement, `RENAME DATABASE`, storage parameters beyond parsing. See [Compatibility](/v0.1.0/sql/compatibility).
+
+## Alter / inspect
+
+```sql
+ALTER TABLE orders ADD COLUMN note TEXT;
+ALTER TABLE orders RENAME COLUMN note TO memo;
+DESCRIBE orders;      -- or SHOW tables
+DROP TABLE IF EXISTS orders_tmp;
+```
+
+**Next:** [Insert data](/v0.1.0/build/insert-data) · **Reference:** [DDL](/v0.1.0/sql/ddl)

@@ -1,0 +1,67 @@
+---
+title: Query JSON documents
+description: Create, extract, filter, update, and index JSON/JSONB in PLOMID v0.1.0.
+---
+
+# Query JSON documents
+
+**Status:** Supported (`crates/json`, `crates/types/src/jsonb.rs`, `crates/sql/src/parser/json.rs`). JSON is a column type + operators inside SQL.
+
+## Create and insert
+
+```sql
+CREATE TABLE events (id BIGINT PRIMARY KEY, payload JSONB);
+INSERT INTO events VALUES
+  (1, '{"user": {"name": "ada", "tags": ["db", "engine"]}, "n": 3}'),
+  (2, '{"user": {"name": "grace"}}');
+SELECT JSON '{"a": 1}', JSON_OBJECT('k': 1, 'j': 2), JSON_ARRAY(1, 'x', true);
+```
+
+## Extract
+
+```sql
+SELECT payload->'user'            AS user_obj,     -- JSON value
+       payload->>'user'           AS user_text,    -- text value
+       payload->'user'->>'name'   AS name,
+       payload#>'{user,name}'     AS name_path,
+       payload#>>'{user,name}'    AS name_path_txt
+FROM events;
+```
+
+Also `#-` (delete path), `@> <@ ? ?| ?& @? @@` containment/existence/path predicates, `-` (`jsonb - key|index|keys`), subscripts `payload['user']['name']`, `(record).field`, and path functions `jsonb_extract_path(_text)`, `jsonb_array_elements(_text)`, `jsonb_object_keys`, `jsonb_each(_text)`, `jsonb_typeof`, `jsonb_pretty`, `jsonb_strip_nulls`, `jsonb_set`, `jsonb_insert`, `to_json(b)`, `row_to_json`.
+
+## Filter
+
+```sql
+SELECT * FROM events WHERE payload @> '{"user": {"name": "ada"}}';
+SELECT * FROM events WHERE payload->>'n' = '3';
+SELECT * FROM events WHERE payload IS JSON OBJECT;
+```
+
+`IS [NOT] JSON [VALUE|OBJECT|ARRAY|SCALAR]`: NULL input → NULL; invalid text → false.
+
+## Update
+
+```sql
+UPDATE events SET payload['user'] = '{"name": "ADA"}' WHERE id = 1;
+UPDATE events SET payload = jsonb_set(payload, '{user,name}', '"ADA"') WHERE id = 1;
+```
+
+## JSON_TABLE
+
+```sql
+SELECT jt.* FROM JSON_TABLE(
+  '{"items": [{"sku": "a", "qty": 2}, {"sku": "b", "qty": 5}]}',
+  '$.items[*]' COLUMNS (sku TEXT PATH '$.sku', qty INT PATH '$.qty')
+) AS jt;
+```
+
+Supports `NESTED`, `FOR ORDINALITY`, `EXISTS`, `DEFAULT … ON EMPTY/ERROR`, `FORMAT JSON`.
+
+## Missing vs NULL
+
+Missing field access yields SQL NULL (filters treat it as not-true; aggregates skip it). `jsonb_strip_nulls` removes JSON nulls; `json_agg` preserves SQL NULL as JSON null. See [NULL semantics](/v0.1.0/sql/null-semantics).
+
+## Reference
+
+[JSON data](/v0.1.0/data/json) · [Operators](/v0.1.0/sql/operators) · [JSON cookbook](/v0.1.0/cookbook/overview)

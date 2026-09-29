@@ -1,0 +1,47 @@
+---
+title: ENUM, DOMAIN, and composite types
+description: User-defined types deep dive — creation, evolution limits, casts, and catalog OIDs.
+---
+
+# ENUM, DOMAIN, and composite types
+
+## ENUM
+
+```sql
+CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');
+CREATE TABLE person (id BIGINT PRIMARY KEY, mood mood DEFAULT 'ok');
+INSERT INTO person VALUES (1, 'happy');   -- invalid label errors
+SELECT * FROM person WHERE mood = 'happy' ORDER BY mood;
+SELECT enum_range(NULL::mood);
+DROP TYPE IF EXISTS mood;
+```
+
+Labels ordered as declared. First user OID 16384 (`FIRST_USER_OID`). No `ALTER TYPE … ADD VALUE` execution in v0.1.0 — recreate the type instead.
+
+## DOMAIN
+
+```sql
+CREATE DOMAIN us_zip AS TEXT CHECK (VALUE ~ '^[0-9]{5}$');
+CREATE DOMAIN qty AS INT CONSTRAINT positive CHECK (VALUE > 0) CONSTRAINT small CHECK (VALUE < 1000000);
+CREATE TABLE o (id BIGINT PRIMARY KEY, zip us_zip, q qty NOT NULL DEFAULT 1);
+```
+
+All `CHECK`s enforced at write; `VALUE` is the input. `typmod`/`not_null` carried in registry. Drop with `DROP DOMAIN … [CASCADE|RESTRICT]`.
+
+## Composite
+
+```sql
+CREATE TYPE address_type AS (street TEXT, city TEXT, zip TEXT);
+CREATE TABLE c (id BIGINT PRIMARY KEY, addr address_type);
+INSERT INTO c VALUES (1, ROW('5 Main', 'Springfield', '12345'));
+SELECT (addr).street, (addr).city FROM c;
+SELECT json_populate_record(NULL::c, '{"id":2}') FROM c LIMIT 1;
+```
+
+`CREATE TYPE name AS (…)` with zero columns (`Some([])`) = standalone composite shell.
+
+## CTO notes
+
+User types are catalog objects with OIDs — visible in `pg_type`, stable across restarts, included in checkpoints. No cross-database type sharing: each database has its own catalog.
+
+**Related:** [CREATE TYPE/DOMAIN](/v0.1.0/sql/create-type-domain) · [Types](/v0.1.0/data/types)

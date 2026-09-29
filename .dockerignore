@@ -1,0 +1,17 @@
+# 
+# © 2026 PLOMID Technology Solutions
+# PLOMID — Platform for Modern Intelligence and Data
+# Author: Sainath Sapa
+# GitHub: https://github.com/sainathsapa
+# The build context is restricted to the packaged artifact: `*` excludes every
+# source file, and only `dist/` (plus this Dockerfile) is let back in. Source
+# therefore cannot reach the image even by accident, and the context stays tiny.
+*
+!dist
+!Dockerfile
+!.dockerignore
+
+# Keep the packaged binaries, but drop anything else that could creep into dist.
+dist/**/*.d
+dist/**/*.rlib
+dist/**/*.pdb

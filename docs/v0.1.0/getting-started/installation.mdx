@@ -1,0 +1,73 @@
+---
+title: Installation
+description: Install PLOMID v0.1.0 from source with Rust 1.84.1+.
+---
+
+# Installation
+
+**Provenance:** source-verified against `Cargo.toml`, `rust-toolchain.toml`, `Makefile`, `Dockerfile`, `start.sh`.
+
+## Prerequisites
+
+- Rust `1.84.1`+ (see `rust-toolchain.toml`), Cargo
+- `cargo-deny` for license/policy checks (CI runs `cargo deny check`)
+- `psql` or any PostgreSQL client for verification
+- Linux/macOS. Docker image is Debian `bookworm-slim`.
+
+## Build from source
+
+```sh
+git clone https://github.com/dsk-solutions/plomid
+cd plomid
+cargo build --workspace
+# server binary:
+cargo build -p plomid-server
+# native CLI:
+cargo build -p plomid-cli   # executable is ./target/debug/plomid
+```
+
+Release binary:
+
+```sh
+cargo build --release -p plomid-server
+./target/release/plomid-server --data ./data --host 127.0.0.1 --port 5432 \
+  --username plomid --password secret
+```
+
+## Quality gates (must stay green)
+
+```sh
+cargo build --workspace
+cargo fmt --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo deny check
+```
+
+## Docker (release path)
+
+```sh
+make docker            # cross-builds Linux binary, packages binary-only image
+make docker-run        # starts plomid-server container on 5432
+make docker-logs       # follow logs
+make docker-stop       # stop container (keeps data volume)
+```
+
+The runtime image ships only `plomid-server` as user `plomid:10001`, volume `/var/lib/plomid/data`. See [Run the server](/v0.1.0/operations/run-server).
+
+## Verify
+
+```sh
+./target/debug/plomid db readiness --host 127.0.0.1 --port 5432 \
+  --user plomid --password secret --database plomid
+```
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `plomid-server was not found beside ...` | Build `plomid-server` first; `plomid server start` looks for a sibling binary |
+| Port in use | Change `--port` / `PLOMID_PORT` |
+| Non-loopback bind refused | Pass `--allow-remote-plaintext` (dev only) or enable TLS flags; see [Configuration](/v0.1.0/operations/configuration) |
+
+Next: [Quickstart](/v0.1.0/getting-started/quickstart).

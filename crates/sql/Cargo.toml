@@ -1,0 +1,23 @@
+[package]
+name = "plomid-sql"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "SQL parser, binder, and catalog-facing SQL types for PLOMID."
+
+[dependencies]
+plomid-core = { workspace = true }
+plomid-txn = { workspace = true }
+plomid-types = { workspace = true }
+plomid-json = { workspace = true }
+tracing = "0.1"
+
+[lib]
+path = "src/lib.rs"
+
+[lints]
+workspace = true

@@ -1,0 +1,26 @@
+---
+title: Architecture overview
+description: How a request moves through PLOMID — verified component relationships.
+---
+
+# Architecture overview
+
+```mermaid
+flowchart TB
+    Client["PG client"] --> Codec["protocol/codec + message"]
+    Codec --> Handler["server/handler: simple Q + extended P/B/D/E/S"]
+    Handler --> Auth["session + scram/md5/cleartext"]
+    Handler --> Exec["executor: parse → plan surface → execute"]
+    Exec --> Registry["database registry (multi-DB)"]
+    Exec --> Catalog["system_catalog + pg_catalog rows"]
+    Exec --> Join["join engine: scans, joins, CTEs, aggregates, windows"]
+    Join --> Txn["txn: lanes, group commit, hot rows"]
+    Txn --> MVCC["mvcc: snapshots + versions"]
+    Txn --> Idx["index: B-tree + ART"]
+    Txn --> Store["storage + wal + columnar + filters"]
+    Store --> Disk["devices/packs/blocks/pages + WAL + checkpoints"]
+```
+
+Crates: `core types sql optimizer(stub) executor network server txn mvcc storage wal index columnar filters json lifecycle security(foundations) cli crc32c`. Rule: own the engine (`deny.toml` forbids PG/RocksDB/ClickHouse/DuckDB foundations).
+
+**Deeper:** [Request lifecycle](/v0.1.0/architecture/request-lifecycle) · [Query pipeline](/v0.1.0/architecture/query-pipeline) · [How it works](/v0.1.0/architecture/how-it-works)

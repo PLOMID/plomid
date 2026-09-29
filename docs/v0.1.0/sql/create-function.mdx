@@ -1,0 +1,75 @@
+---
+title: CREATE FUNCTION, PROCEDURE, TRIGGER, EXTENSION
+description: Every procedural CREATE in v0.1.0 — exact syntax, what parses, what executes, what is stub.
+---
+
+# CREATE FUNCTION, PROCEDURE, TRIGGER, EXTENSION
+
+<Note>
+**Status labels in this page:** `Parses` means the statement is accepted by `crates/sql/src/parser/create.rs:parse_other_create` into `CreateStatement::{Function, Procedure, Trigger, Extension}` but has **no execution** in v0.1.0. Only `CREATE TYPE / DOMAIN / SEQUENCE` in this family have runtime effects. Do not build on stubs.
+</Note>
+
+## CREATE FUNCTION — parses
+
+```text
+CREATE FUNCTION name ( [ [argname] datatype [, ...] ] )
+RETURNS rettype
+LANGUAGE lang
+AS $$ body $$ | AS 'body'
+```
+
+Source: `CreateStatement::Function { name, args: Vec<FunctionArg{name, data_type}>, returns, language, body }`.
+
+<Tabs>
+<Tab title="Minimal">
+```sql
+CREATE FUNCTION add_two(a INT, b INT) RETURNS INT LANGUAGE sql AS $$ SELECT a + b $$;
+```
+</Tab>
+<Tab title="Named args">
+```sql
+CREATE FUNCTION greet(name TEXT) RETURNS TEXT LANGUAGE plpgsql AS $$ BEGIN RETURN 'hi'; END $$;
+```
+</Tab>
+<Tab title="Bare types">
+```sql
+CREATE FUNCTION f(INT, TEXT) RETURNS VOID LANGUAGE c AS 'f_body';
+```
+</Tab>
+</Tabs>
+
+**Behavior:** accepted, stored nowhere, callable nowhere. Calling `SELECT add_two(1,2)` → unknown-function error. `DROP FUNCTION name[(types)] [CASCADE|RESTRICT]` parses and removes the stub entry shape only.
+
+**What to use instead:** implement logic in SQL expressions, views, or application code. See [Functions](/v0.1.0/sql/functions).
+
+## CREATE PROCEDURE — parses
+
+```sql
+CREATE PROCEDURE clean_old_orders() LANGUAGE sql AS $$ DELETE FROM orders WHERE placed_at < now() - INTERVAL '1 year' $$;
+```
+
+`CreateStatement::Procedure { name }` only — args/body discarded shapes. No `CALL` execution in v0.1.0.
+
+## CREATE TRIGGER — parses
+
+```sql
+CREATE TRIGGER audit_insert AFTER INSERT ON orders FOR EACH ROW EXECUTE FUNCTION audit_fn();
+```
+
+`CreateStatement::Trigger { name }` only. No firing, no `audit_fn` resolution, no `OLD/NEW` support.
+
+## CREATE EXTENSION — parses
+
+```sql
+CREATE EXTENSION pgcrypto;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+```
+
+`CreateStatement::Extension { name }` only. No loading, no new functions/types. If you need `gen_random_uuid()`-style helpers, they do not exist in v0.1.0 — generate UUIDs client-side.
+
+## Related
+
+<CardGroup cols={2}>
+<Card title="Executable creates" icon="check" href="/v0.1.0/sql/create-type-domain">TYPE, DOMAIN, SEQUENCE — these actually work</Card>
+<Card title="Views" icon="eye" href="/v0.1.0/data/sequences-views">CREATE VIEW executes; MATERIALIZED is stub</Card>
+</CardGroup>

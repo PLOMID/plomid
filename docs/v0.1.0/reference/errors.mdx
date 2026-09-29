@@ -1,0 +1,28 @@
+---
+title: Error reference
+description: Actual PLOMID errors — meaning, cause, example, fix.
+---
+
+# Error reference
+
+Sources: `crates/sql/src/parser/mod.rs:ParseError`, `crates/executor/src/error.rs`, `crates/network` SQLSTATE mapping, `crates/storage`/`crates/wal` corruption paths.
+
+| Error | Meaning | Typical cause | Fix |
+|---|---|---|---|
+| `ParseError::Unsupported {message, detail}` | SQL parsed far enough to reject | e.g. file `COPY`, non-table `ALTER`, bad precision | use supported form in [Compatibility](/v0.1.0/sql/compatibility) |
+| `Conflict: BEGIN without COMMIT or ROLLBACK` | unclosed explicit txn | missing `COMMIT` | terminate every `BEGIN` |
+| `Unsupported (txn COPY / UPDATE…FROM)` | staged op not allowed in-txn | `COPY`/`UPDATE…FROM` after `BEGIN` | run in autocommit |
+| `Transaction` (double commit/abort, write-after-end) | lifecycle violation | app retry bug | fix txn state machine |
+| `Conflict` (row/unique lane) | concurrent write won by another txn | hot key | retry whole transaction |
+| Unique/PK violation | duplicate key | replay without `ON CONFLICT` | `DO NOTHING/DO UPDATE` or dedup |
+| `28P01` | auth failed | wrong user/password, bad SCRAM | check creds, `--auth` mode |
+| `08P01` | protocol error | malformed extended flow | fix client bind/describe order |
+| `Corruption` | checksum/continuity/version failure | torn write, truncated segment, gap | restore from backup; never ignore |
+| `AlreadyExists` (create) | durable state present | re-`create` on existing root | `open`, not `create` |
+| `stale` checkpoint | backward lsn/gen | old checkpoint file | use latest valid (automatic) |
+| `InvalidArgument` (oversize WAL record) | record exceeds segment | >64 MiB payload / larger than segment | shrink write |
+| `connection_limit` + drop | `max_connections` hit | load spike | back off / pool |
+| `tls_mode_not_yet_implemented` | TLS negotiated | client requested SSL | plaintext on trusted net or wait for TLS |
+| `InFailedTransaction` (E) | extended error until Sync | failed Execute | `Sync` then retry |
+
+Ambiguous column, arity mismatch (set ops), non-integer `LIMIT`, unknown `USE` database: fix the SQL per linked reference. Values/passwords never appear in logs — include the statement shape (not literals) when reporting.

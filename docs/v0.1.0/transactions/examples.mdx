@@ -1,0 +1,86 @@
+---
+title: Transaction examples — every shape
+description: 18 copy-paste transaction patterns — the vast reference for builders.
+---
+
+# Transaction examples — every shape
+
+Shared schema: [Quickstart](/v0.1.0/getting-started/quickstart). Rules recap: unclosed `BEGIN` → Conflict; lone `COMMIT` no-op; `COPY`/`UPDATE…FROM` only in autocommit; first lane wins.
+
+## Basics
+
+```sql
+BEGIN; SELECT * FROM users WHERE id = 1; COMMIT;                          -- read-only txn
+BEGIN; INSERT INTO users VALUES (100, 'tmp'); COMMIT;                     -- single insert
+BEGIN; INSERT INTO users VALUES (101,'a'),(102,'b'),(103,'c'); COMMIT;    -- multi-row
+BEGIN; UPDATE orders SET total = total + 1 WHERE id = 101; COMMIT;
+BEGIN; DELETE FROM orders WHERE id = 999; COMMIT;                         -- zero-row commit ok
+BEGIN; INSERT INTO users VALUES (1,'dup') ON CONFLICT (id) DO NOTHING; COMMIT;
+BEGIN; INSERT INTO users VALUES (1,'ADA') ON CONFLICT (id) DO UPDATE SET name='ADA'; COMMIT;
+```
+
+## Rollbacks and savepoints
+
+```sql
+BEGIN; INSERT INTO users VALUES (200,'x'); ROLLBACK;                      -- discard
+SELECT * FROM users WHERE id = 200;                                       -- zero rows
+ROLLBACK TO SAVEPOINT s;  -- parses, but the name is swallowed: FULL rollback, not partial
+COMMIT;  -- lone COMMIT: no-op group, not an error
+ROLLBACK; -- lone ROLLBACK: no-op group
+```
+
+<Warning>Standalone `SAVEPOINT name;` is not a statement in v0.1.0 and errors. `ROLLBACK [TO [SAVEPOINT] name]` consumes the name without acting on it — there is no partial rollback. Structure transactions so they can be retried whole (see the e-commerce [order transaction](/v0.1.0/cookbook/ecommerce)).</Warning>
+
+## Multi-statement atomicity
+
+```sql
+BEGIN;                                                                     -- transfer funds pattern
+UPDATE accounts SET bal = bal - 100 WHERE id = 1;
+UPDATE accounts SET bal = bal + 100 WHERE id = 2;
+INSERT INTO ledger VALUES (1, 1, 2, 100, now());
+COMMIT;
+BEGIN;                                                                     -- order + lines
+INSERT INTO orders VALUES (500, 1, 99.98, now());
+INSERT INTO order_lines VALUES (500, 1), (500, 2);
+COMMIT;
+```
+
+## DDL in transactions
+
+```sql
+BEGIN; CREATE TABLE t2 (id BIGINT PRIMARY KEY, v TEXT); INSERT INTO t2 VALUES (1,'a'); COMMIT;
+BEGIN; CREATE VIEW v_active AS SELECT * FROM users WHERE id > 0; COMMIT;
+```
+
+## Isolation snapshots
+
+```sql
+-- session A: BEGIN; SELECT count(*) FROM orders;  (watermark W)
+-- session B: INSERT INTO orders ...; COMMIT;      (commit_ts W+1)
+-- session A: SELECT count(*) FROM orders;         (same snapshot: same count)
+-- session A: COMMIT; SELECT count(*) FROM orders; (new snapshot: sees B)
+```
+
+## Conflict handling (app pattern)
+
+```python
+for attempt in range(3):
+    try:
+        cur.execute("BEGIN")
+        cur.execute("UPDATE accounts SET bal = bal - 100 WHERE id = 1")
+        cur.execute("COMMIT")
+        break
+    except ConflictError:
+        cur.execute("ROLLBACK")
+        continue
+```
+
+## What NOT to do
+
+```sql
+BEGIN; COPY orders FROM STDIN; COMMIT;          -- Unsupported in-txn: run COPY in autocommit
+BEGIN; UPDATE users AS u SET name='x' FROM orders o WHERE o.user_id=u.id; COMMIT;  -- Unsupported: autocommit only
+BEGIN; INSERT INTO users VALUES (1,'a');       -- missing COMMIT: Conflict on close
+```
+
+**Related:** [Using transactions](/v0.1.0/transactions/using-transactions) · [MVCC](/v0.1.0/transactions/mvcc) · [Behavior contracts](/v0.1.0/transactions/behavior-contracts)

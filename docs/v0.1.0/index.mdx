@@ -1,0 +1,108 @@
+---
+title: PLOMID v0.1.0 Documentation
+description: Complete developer documentation for PLOMID v0.1.0 — discover, run, query, operate, and explore internals.
+---
+
+# PLOMID v0.1.0
+
+PLOMID is an enterprise universal database platform. It owns its database engine — it does not wrap PostgreSQL, RocksDB, ClickHouse, DuckDB, or SQLite. One logical database speaks SQL over multiple physical engines.
+
+```mermaid
+flowchart TB
+    subgraph Clients["your tools, unchanged"]
+        P["psql"] --- D["DBeaver"] --- A["any PostgreSQL driver"]
+    end
+    Clients -->|"PostgreSQL wire protocol"| PLOMID["PLOMID v0.1.0\none logical database"]
+    PLOMID --> SQL["SQL"]
+    PLOMID --> REL["relational rows"]
+    PLOMID --> DOC["JSON documents"]
+    PLOMID --> TS["time-series events"]
+    PLOMID --> DISK["WAL + checkpoints\non your disk"]
+```
+
+**Version scope:** everything in this section describes `v0.1.0` only (workspace version `0.1.0`, `server_version 17.0`). Every behavior is traced to the implementation.
+
+## Three ways to navigate
+
+<CardGroup cols={3}>
+  <Card title="LEARN" icon="graduation-cap" href="/v0.1.0/learn/concepts">
+    What is PLOMID, data model, SQL fundamentals, architecture, learning paths.
+  </Card>
+  <Card title="BUILD" icon="hammer" href="/v0.1.0/build/create-database">
+    Task guides: create a database, insert, query JSON/time, index, transact, inspect plans.
+  </Card>
+  <Card title="REFERENCE" icon="book" href="/v0.1.0/sql/overview">
+    Precise SQL, CLI, configuration, errors, and `pg_catalog` answers.
+  </Card>
+</CardGroup>
+
+## First success in 5 minutes
+
+<Steps>
+  <Step title="Start the server">
+    ```sh
+    ./start.sh
+    # defaults: host 0.0.0.0, port 5432, data ./data, user plomid, password secret
+    ```
+  </Step>
+  <Step title="Connect with any PostgreSQL client">
+    ```sh
+    psql "postgresql://plomid:secret@localhost:5432/plomid"
+    ```
+  </Step>
+  <Step title="Run your first query">
+    ```sql
+    CREATE TABLE users (id BIGINT PRIMARY KEY, name TEXT NOT NULL);
+    INSERT INTO users VALUES (1, 'ada'), (2, 'grace');
+    SELECT * FROM users ORDER BY id;
+    ```
+  </Step>
+</Steps>
+
+Full path: [Quickstart](/v0.1.0/getting-started/quickstart).
+
+## What v0.1.0 actually supports
+
+| Area | Status | Start here |
+|---|---|---|
+| SQL DDL/DML (`CREATE TABLE`, `INSERT`, `SELECT`, `UPDATE`, `DELETE`, `TRUNCATE`) | **Supported** | [SQL overview](/v0.1.0/sql/overview) |
+| Joins, subqueries, CTEs (`WITH`, incl. `RECURSIVE`), set ops, window functions | **Supported** | [SELECT](/v0.1.0/sql/select), [Joins](/v0.1.0/sql/joins) |
+| JSON/JSONB operators, constructors, `JSON_TABLE` | **Supported** | [Query JSON](/v0.1.0/build/query-json) |
+| Temporal types + `EXTRACT`, `date_trunc`, `age`, interval arithmetic | **Supported** | [Query time](/v0.1.0/build/query-time) |
+| B-tree + in-memory ART indexes, unique/PK enforcement | **Supported** | [Indexes](/v0.1.0/indexes/overview) |
+| Transactions (`BEGIN`/`COMMIT`/`ROLLBACK`), MVCC snapshots | **Supported** | [Transactions](/v0.1.0/transactions/using-transactions) |
+| WAL + checkpoints + crash recovery | **Supported** | [WAL / recovery](/v0.1.0/storage/wal-checkpoints-recovery) |
+| PostgreSQL wire protocol v3 (simple + extended, SCRAM/MD5/cleartext) | **Supported** | [Run the server](/v0.1.0/operations/run-server) |
+| Vector, graph, blobs, multi-region, distributed | **Not available in v0.1.0** | [Future models](/v0.1.0/future/vector-graph) |
+
+> Status labels used everywhere: `Supported` · `Partial` · `Experimental` · `Internal` · `Not available`. Roadmap ideas are never listed as supported.
+
+## Complete public surface (nothing hidden)
+
+<CardGroup cols={2}>
+  <Card title="SQL — full language" icon="database" href="/v0.1.0/sql/overview">
+    SELECT → DDL, CREATE FUNCTION / TYPE / DOMAIN / ROLE, window functions, permissions, compatibility.
+  </Card>
+  <Card title="JSON — document model" icon="braces" href="/v0.1.0/json/overview">
+    Operators, every JSON function, JSON_TABLE, NULL/missing contracts.
+  </Card>
+  <Card title="Time-series" icon="chart-line" href="/v0.1.0/timeseries/overview">
+    Event modeling, windows, rollups, gap-filling, retention recipes.
+  </Card>
+  <Card title="Every function" icon="code" href="/v0.1.0/reference/scalar-functions">
+    Exhaustive scalar catalog — string, math, array, temporal, session, catalog.
+  </Card>
+  <Card title="Transactions — every shape" icon="arrows-rotate" href="/v0.1.0/transactions/examples">
+    18 patterns: basics, rollbacks, atomic transfers, DDL-in-txn, conflicts.
+  </Card>
+  <Card title="Architecture deep dive" icon="microchip" href="/v0.1.0/architecture/executor">
+    Executor dispatch, index/storage algorithms, MVCC + filtering pipeline.
+  </Card>
+</CardGroup>
+
+## Where to go next
+
+- New to databases? [What is PLOMID?](/v0.1.0/getting-started/what-is-plomid) → [Core concepts](/v0.1.0/learn/concepts) → [SQL fundamentals](/v0.1.0/learn/sql-fundamentals)
+- Know what to build? [Create a table](/v0.1.0/build/create-table) → [Cookbook](/v0.1.0/cookbook/overview) → [Complex queries](/v0.1.0/cookbook/complex-queries)
+- Need a precise answer? [CLI reference](/v0.1.0/reference/cli-reference) · [Configuration](/v0.1.0/reference/config-reference) · [Errors](/v0.1.0/reference/errors)
+- Operating it? [Run the server](/v0.1.0/operations/run-server) · [Logging & diagnostics](/v0.1.0/operations/logging-diagnostics) · [Troubleshooting](/v0.1.0/troubleshooting/overview)

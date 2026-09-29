@@ -1,0 +1,18 @@
+[package]
+name = "plomid-lifecycle"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Mount and demount lifecycle coordinator for PLOMID storage."
+
+[dependencies]
+plomid-core = { workspace = true }
+plomid-storage = { workspace = true }
+plomid-wal = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,54 @@
+---
+title: Insert, update, and delete data
+description: DML that works — values, defaults, SELECT-sourced inserts, conflicts, RETURNING.
+---
+
+# Insert, update, and delete data
+
+## Insert
+
+```sql
+-- multi-row values
+INSERT INTO users VALUES (1, 'ada'), (2, 'grace');
+-- explicit columns + expressions
+INSERT INTO orders (id, user_id, total, placed_at)
+VALUES (101, 1, 59.99, now()), (102, 1, 12.50, now());
+-- defaults
+INSERT INTO users VALUES (DEFAULT, DEFAULT);   -- via DEFAULT VALUES form below
+INSERT INTO users (id, name) VALUES (3, 'linus');
+-- from a query
+INSERT INTO archive_orders SELECT * FROM orders WHERE placed_at < DATE '2025-01-01';
+-- idempotent replays
+INSERT INTO users VALUES (1, 'ada') ON CONFLICT (id) DO NOTHING;
+INSERT INTO users VALUES (1, 'ADA') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+-- echo what happened
+INSERT INTO users VALUES (4, 'hedy') RETURNING id, name;
+```
+
+Implemented: `VALUES (…)`, `DEFAULT VALUES`, `SELECT`-sourced, `ON CONFLICT … DO NOTHING | DO UPDATE SET … [WHERE …]`, `RETURNING`. Values accept literals, casts, `ARRAY[…]`, scalar expressions (`crates/sql/src/parser/insert.rs`).
+
+## Update
+
+```sql
+UPDATE users SET name = 'ADA' WHERE id = 1 RETURNING id, name;
+UPDATE users AS u SET name = upper(name) FROM orders o WHERE o.user_id = u.id;
+UPDATE events SET payload['team'] = '"engine"' WHERE id = 7;  -- JSON subscript target
+```
+
+`FROM` joins are materialized first (`crates/executor/src/update_from.rs`); `UPDATE…FROM` inside an explicit transaction is **unsupported** — do it in autocommit.
+
+## Delete
+
+```sql
+DELETE FROM orders WHERE placed_at < DATE '2024-01-01' RETURNING id;
+DELETE FROM orders USING users WHERE orders.user_id = users.id AND users.name = 'test';
+TRUNCATE orders;
+```
+
+## Behavior
+
+- DML returns counts (`Inserted/Updated/Deleted`) or rows with `RETURNING`.
+- Writes are WAL-appended and visible per MVCC rules; uncommitted writes overlay your own reads only.
+- `COPY table FROM STDIN | TO STDOUT` exists for wire-level bulk transfer; file `COPY` is rejected. `COPY` requires wire frames and fails in plain autocommit SQL.
+
+**Next:** [Query data](/v0.1.0/build/query-data) · **Reference:** [INSERT](/v0.1.0/sql/insert) · [UPDATE](/v0.1.0/sql/update) · [DELETE](/v0.1.0/sql/delete)
